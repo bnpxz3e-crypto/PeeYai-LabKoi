@@ -20,6 +20,8 @@ function writeDemo(d){localStorage.setItem(KEY,JSON.stringify(d));window.dispatc
 if(!cloud&&!localStorage.getItem(KEY))writeDemo(demoSeed());
 const bc=(!cloud&&'BroadcastChannel'in window)?new BroadcastChannel('mori_sync'):null;
 const inform=()=>{if(bc)bc.postMessage('changed')};
+const imageSrc=m=>{const u=String(m?.image_url||'');return (/^https:\/\//i.test(u)||/^data:image\/(jpeg|png|webp);base64,/i.test(u))?u:''};
+const foodArt=(m,cl='food-art')=>imageSrc(m)?`<div class="${cl}"><img src="${esc(imageSrc(m))}" loading="lazy" alt="${esc(m.name)}"></div>`:`<div class="${cl} emoji-art">${esc(m.emoji||'🍽️')}</div>`;
 const money=n=>'฿'+Number(n||0).toLocaleString('th-TH',{minimumFractionDigits:0,maximumFractionDigits:2});
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const token=()=>crypto.randomUUID();
@@ -52,7 +54,20 @@ const api={
  async place(table,items){if(!cloud){let d=readDemo();if(!d.tables.includes(table))throw Error('ไม่พบโต๊ะนี้');let lines=items.map(i=>{let m=d.menu.find(x=>x.id===i.id&&x.active);if(!m||i.qty<1||i.qty>99)throw Error('รายการอาหารไม่ถูกต้อง');return {menu_id:m.id,name:m.name,price:Number(m.price),qty:i.qty,emoji:m.emoji}});let order={id:token(),number:'A-'+d.nextOrderId++,table_code:table,token:token(),items:lines,total:lines.reduce((s,x)=>s+x.price*x.qty,0),status:'waiting',payment_status:'unpaid',created_at:new Date().toISOString()};d.orders.unshift(order);writeDemo(d);inform();return {order_id:order.id,track_token:order.token,number:order.number}}const {data,error}=await supa.rpc('place_order',{p_table:table,p_items:items.map(i=>({id:i.id,qty:i.qty}))});if(error)throw error;return data},
  async tracking(t){if(!cloud){const o=readDemo().orders.find(x=>x.token===t);return o||null}const {data,error}=await supa.rpc('track_order',{p_token:t});if(error)throw error;return data},
  async orders(){if(!cloud)return readDemo().orders;const {data,error}=await supa.from('orders').select('*,order_items(*)').order('created_at',{ascending:false}).limit(500);if(error)throw error;return data.map(o=>({...o,items:(o.order_items||[]).map(i=>({menu_id:i.menu_id,name:i.name,price:Number(i.price),qty:i.qty,emoji:i.emoji}))}))},
- async menuSave(item){if(!cloud){let d=readDemo();if(item.id){let ix=d.menu.findIndex(x=>x.id===Number(item.id));if(ix<0)throw Error('ไม่พบเมนู');d.menu[ix]={...d.menu[ix],...item,id:Number(item.id)}}else d.menu.push({...item,id:d.nextMenuId++});writeDemo(d);inform();return}let obj={name:item.name,price:item.price,category:item.category,emoji:item.emoji,description:item.description,active:item.active};const {error}=item.id?await supa.from('menu_items').update(obj).eq('id',item.id):await supa.from('menu_items').insert(obj);if(error)throw error},
+ async menuSave(item){if(!cloud){let d=readDemo();if(item.id){let ix=d.menu.findIndex(x=>x.id===Number(item.id));if(ix<0)throw Error('ไม่พบเมนู');d.menu[ix]={...d.menu[ix],...item,id:Number(item.id)}}else d.menu.push({...item,id:d.nextMenuId++});writeDemo(d);inform();return}let obj={name:item.name,price:item.price,category:item.category,emoji:item.emoji,description:item.description,active:item.active,image_url:item.image_url||null};const {error}=item.id?await supa.from('menu_items').update(obj).eq('id',item.id):await supa.from('menu_items').insert(obj);if(error)throw error},
+ async uploadMenuImage(file){
+   if(!file)throw Error('กรุณาเลือกรูปภาพ');
+   if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw Error('รองรับเฉพาะ JPG, PNG หรือ WebP');
+   if(file.size>3*1024*1024)throw Error('รูปภาพต้องไม่เกิน 3 MB');
+   if(!cloud){
+     return await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('อ่านรูปไม่สำเร็จ'));reader.readAsDataURL(file)})
+   }
+   const ext={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'}[file.type];
+   const path=`menu/${crypto.randomUUID()}.${ext}`;
+   const {error}=await supa.storage.from('menu-images').upload(path,file,{contentType:file.type,cacheControl:'3600',upsert:false});
+   if(error)throw error;
+   return supa.storage.from('menu-images').getPublicUrl(path).data.publicUrl;
+ },
  async menuDelete(id){if(!cloud){let d=readDemo();d.menu=d.menu.filter(x=>x.id!==id);writeDemo(d);inform();return}const {error}=await supa.from('menu_items').delete().eq('id',id);if(error)throw error},
  async orderStatus(id,status){if(!cloud){let d=readDemo();let o=d.orders.find(x=>x.id===id);if(!o)throw Error('ไม่พบออเดอร์');o.status=status;writeDemo(d);inform();return}const {error}=await supa.from('orders').update({status}).eq('id',id);if(error)throw error},
  async payment(id,paid){if(!cloud){let d=readDemo();let o=d.orders.find(x=>x.id===id);if(!o)throw Error('ไม่พบออเดอร์');o.payment_status=paid?'paid':'unpaid';writeDemo(d);inform();return}const {error}=await supa.from('orders').update({payment_status:paid?'paid':'unpaid'}).eq('id',id);if(error)throw error},
