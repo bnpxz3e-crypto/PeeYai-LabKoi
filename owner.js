@@ -20,7 +20,55 @@ function overviewView(){
 }
 function ticket(o){let action=statusNext[o.status];return `<article class="ticket"><div class="ticket-header"><span class="ticket-table">โต๊ะ ${esc(o.table_code)}</span><span class="ticket-time">${timeStr(o.created_at)}</span></div><div class="ticket-number">${esc(o.number)} <span class="badge ${o.status}">${statusLabel[o.status]}</span></div><div class="ticket-items">${o.items.map(i=>`<div class="ticket-menu-line"><div><b>${i.qty} ×</b> <span>${esc(i.name)}</span>${optionsText(i.options)?`<div class="order-options">${esc(optionsText(i.options))}</div>`:''}</div></div>`).join('')}</div><div class="ticket-actions">${action?`<button class="btn primary" onclick="setStatus('${o.id}','${action}')">${statusAction[o.status]} →</button>`:'<span class="badge served">✓ เสร็จสิ้น</span>'}<button class="btn plain" onclick="editOrder('${o.id}')">แก้ไข</button><button class="btn danger" onclick="cancelOrder('${o.id}')">ยกเลิก</button></div></article>`}
 function kitchenView(){const active=activeOrders();const names=['waiting','cooking','ready','served'];return `<div class="stats">${stat('ออเดอร์ทั้งหมด',active.length,'▤')}${stat('รอเริ่มทำ',active.filter(o=>o.status==='waiting').length,'◷')}${stat('กำลังทำ',active.filter(o=>o.status==='cooking').length,'♨')}${stat('พร้อมเสิร์ฟ',active.filter(o=>o.status==='ready').length,'✓')}</div><div class="section-title"><div><span class="section-eyebrow">KITCHEN DISPLAY</span><h2>คิวอาหารในครัว</h2><p>กดปุ่มใหญ่ด้านล่างของบิลเพื่อเปลี่ยนสถานะ</p></div><button class="btn plain" onclick="refresh()">↻ อัปเดต</button></div><div class="kanban">${names.map(st=>{let rows=active.filter(x=>x.status===st);return `<section class="kanban-col ${st}"><div class="kanban-title"><b>${statusLabel[st]}</b><span class="count">${rows.length} บิล</span></div>${rows.length?rows.map(ticket).join(''):'<div class="empty">ไม่มีออเดอร์ในสถานะนี้</div>'}</section>`}).join('')}</div>`}
-function orderCards(list,counter=false){return `<div class="order-card-grid">${list.length?list.map(o=>`<article class="card order-card"><div class="order-card-head"><div><span class="order-id">${esc(o.number)}</span><div class="order-table">โต๊ะ ${esc(o.table_code)} · ${timeStr(o.created_at)}</div></div><span class="badge ${o.status}">${statusLabel[o.status]}</span></div><div class="order-card-items">${o.items.map(i=>`<div><span><b>${i.qty}×</b> ${esc(i.name)}${optionsText(i.options)?`<small class="order-options">${esc(optionsText(i.options))}</small>`:''}</span><span>${money(i.price*i.qty)}</span></div>`).join('')}</div><div class="order-card-total"><span>ยอดรวม</span><strong>${money(o.total)}</strong></div><div class="order-card-payment"><span class="badge ${o.payment_status==='paid'?'paid':'unpaid'}">${o.payment_status==='paid'?'✓ ชำระแล้ว':'รอชำระเงิน'}</span></div><div class="order-card-actions">${o.status!=='cancelled'?`<button class="btn plain" onclick="editOrder('${o.id}')">แก้ไขรายการ</button><button class="btn danger" onclick="cancelOrder('${o.id}')">ยกเลิกออเดอร์</button>${counter&&o.payment_status!=='paid'?`<button class="btn green" onclick="pay('${o.id}')">ยืนยันรับเงิน</button>`:''}`:'<span class="cancelled-note">รายการนี้ถูกยกเลิกแล้ว · เก็บไว้ตรวจสอบย้อนหลัง</span>'}</div></article>`).join(''):'<div class="card empty" style="grid-column:1/-1">ยังไม่มีออเดอร์ในหมวดนี้</div>'}</div>`}
+function orderCards(list,counter=false){return `<div class="order-card-grid">${list.length?list.map(o=>`<article class="card order-card"><div class="order-card-head"><div><span class="order-id">${esc(o.number)}</span>${counter?`<button type="button" class="receipt-print-btn" onclick="printReceipt('${o.id}')" title="พิมพ์ใบเสร็จบิล ${esc(o.number)}" aria-label="พิมพ์ใบเสร็จบิล ${esc(o.number)}">🖨️ พิมพ์</button>`:''}<div class="order-table">โต๊ะ ${esc(o.table_code)} · ${timeStr(o.created_at)}</div></div><span class="badge ${o.status}">${statusLabel[o.status]}</span></div><div class="order-card-items">${o.items.map(i=>`<div><span><b>${i.qty}×</b> ${esc(i.name)}${optionsText(i.options)?`<small class="order-options">${esc(optionsText(i.options))}</small>`:''}</span><span>${money(i.price*i.qty)}</span></div>`).join('')}</div><div class="order-card-total"><span>ยอดรวม</span><strong>${money(o.total)}</strong></div><div class="order-card-payment"><span class="badge ${o.payment_status==='paid'?'paid':'unpaid'}">${o.payment_status==='paid'?'✓ ชำระแล้ว':'รอชำระเงิน'}</span></div><div class="order-card-actions">${o.status!=='cancelled'?`<button class="btn plain" onclick="editOrder('${o.id}')">แก้ไขรายการ</button><button class="btn danger" onclick="cancelOrder('${o.id}')">ยกเลิกออเดอร์</button>${counter&&o.payment_status!=='paid'?`<button class="btn green" onclick="pay('${o.id}')">ยืนยันรับเงิน</button>`:''}`:'<span class="cancelled-note">รายการนี้ถูกยกเลิกแล้ว · เก็บไว้ตรวจสอบย้อนหลัง</span>'}</div></article>`).join(''):'<div class="card empty" style="grid-column:1/-1">ยังไม่มีออเดอร์ในหมวดนี้</div>'}</div>`}
+// Print only the selected cashier bill. Printing never updates payment state.
+function printReceipt(id){
+ const o=orders.find(row=>String(row.id)===String(id));
+ if(!o){toast('ไม่พบบิล กรุณารีเฟรชข้อมูล');return}
+ const win=window.open('','_blank','width=470,height=760');
+ if(!win){toast('เบราว์เซอร์บล็อกหน้าต่างพิมพ์ กรุณาอนุญาต Pop-ups สำหรับเว็บไซต์นี้');return}
+ const fmt=value=>Number(value||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
+ const date= new Date(o.created_at);
+ const dateLabel=Number.isNaN(date.getTime())?'-':date.toLocaleString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+ const safeNumber=esc(o.number||'-');
+ const safeTable=esc(o.table_code||'-');
+ const rows=(o.items||[]).map(i=>{
+   const qty=Math.max(0,Number(i.qty)||0);
+   const opts=optionsText(i.options);
+   return `<div class="item"><div class="item-title">${esc(i.name)}</div><div class="item-values"><span>${qty} × ${fmt(i.price)}</span><strong>${fmt(qty*Number(i.price||0))}</strong></div>${opts?`<div class="item-options">${esc(opts)}</div>`:''}</div>`;
+ }).join('');
+ const payment=o.payment_status==='paid'?'ชำระแล้ว':'ยังไม่ชำระเงิน';
+ const cancelled=o.status==='cancelled';
+ const status=cancelled?'ยกเลิกออเดอร์':payment;
+ const total=fmt(o.total);
+ // Isolated print document: does not print the counter UI or create a second sheet.
+ const html=`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>ใบเสร็จ ${safeNumber}</title>
+ <style>
+  *{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;color:#000;font-family:Tahoma,'Noto Sans Thai',Arial,sans-serif}
+  body{width:48mm;max-width:48mm;font-size:11px;line-height:1.45;padding:2mm 2mm 4mm;overflow-wrap:anywhere}
+  .center{text-align:center}.shop{font-size:16px;font-weight:800;margin:1mm 0}.caption{font-size:11px;font-weight:600}.sub{font-size:10px}
+  hr{border:0;border-top:1px dashed #111;margin:2.5mm 0}
+  .row{display:flex;justify-content:space-between;gap:4px}.row>span:last-child{text-align:right}
+  .item{margin:2mm 0;break-inside:avoid;page-break-inside:avoid}.item-title{font-size:12px;font-weight:600}
+  .item-values{display:flex;justify-content:space-between;gap:5px}.item-options{font-size:10px;margin-top:1mm;padding-left:1mm}
+  .total{font-size:15px;font-weight:800}.paid{text-align:center;font-size:12px;font-weight:700;margin:2mm 0}
+  @page{margin:0}
+  @media screen{body{margin:18px auto;box-shadow:0 1px 14px #aaa;background:#fff;min-height:75mm}}
+  @media print{html,body{width:48mm!important;max-width:48mm!important;margin:0!important;padding:0!important}body{padding:2mm 2mm 4mm!important}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+ </style></head><body>
+ <div class="center sub">ร้านอาหารอีสาน</div><div class="shop center">พี่ใหญ่ลาบก้อย</div>
+ <div class="caption center">${cancelled?'สำเนาบิลที่ยกเลิก':o.payment_status==='paid'?'ใบเสร็จรับเงิน':'ใบแจ้งยอดชำระเงิน'}</div>
+ <hr><div class="row"><span>เลขบิล</span><b>${safeNumber}</b></div>
+ <div class="row"><span>โต๊ะ</span><b>${safeTable}</b></div>
+ <div class="row"><span>วันที่</span><span>${esc(dateLabel)}</span></div><hr>
+ ${rows||'<div>ไม่มีรายการอาหาร</div>'}<hr>
+ <div class="row total"><span>ยอดรวม</span><span>฿${total}</span></div>
+ <div class="paid">${status}</div><hr>
+ <div class="center sub">ขอบคุณที่มาอุดหนุน</div><div class="center sub">ร้านพี่ใหญ่ลาบก้อย</div>
+ <script>window.addEventListener('load',()=>{setTimeout(()=>{window.focus();window.print()},280)});<\/script>
+ </body></html>`;
+ win.document.open();win.document.write(html);win.document.close();
+}
 function simpleOrderTable(list,counter=false){return orderCards(list,counter)}
 function counterView(){let active=activeOrders();let paid=active.filter(x=>x.payment_status==='paid');let unpaid=active.filter(x=>x.payment_status!=='paid');let shown=counterFilter==='all'?active:active.filter(x=>x.payment_status===counterFilter);return `<div class="stats">${stat('รับชำระแล้ว',money(paid.reduce((s,x)=>s+Number(x.total),0)),'฿')}${stat('รอชำระ',money(unpaid.reduce((s,x)=>s+Number(x.total),0)),'◷')}${stat('ออเดอร์ทั้งหมด',active.length,'▤')}${stat('ชำระแล้ว',paid.length,'✓')}</div><div class="section-title"><div><span class="section-eyebrow">CASHIER</span><h2>บิลและการชำระเงิน</h2><p>ตรวจสอบยอดก่อนกดยืนยันรับเงิน · ระบบชำระออนไลน์ยังไม่เปิด</p></div><div class="subnav"><button class="${counterFilter==='all'?'active':''}" onclick="counterFilter='all';render()">ทั้งหมด</button><button class="${counterFilter==='unpaid'?'active':''}" onclick="counterFilter='unpaid';render()">รอชำระ</button><button class="${counterFilter==='paid'?'active':''}" onclick="counterFilter='paid';render()">ชำระแล้ว</button></div></div>${orderCards(shown,true)}`}
 function ordersView(){let shown=orderFilter==='all'?orders:orders.filter(x=>x.status===orderFilter);return `<div class="section-title"><div><span class="section-eyebrow">ORDER MANAGEMENT</span><h2>รายการออเดอร์ทั้งหมด</h2><p>แก้ไขรายการอาหารและยกเลิกออเดอร์ได้ทุกสถานะ</p></div><div class="toolbar"><select class="input" style="width:auto" aria-label="เลือกสถานะ" onchange="orderFilter=this.value;render()">${['all','waiting','cooking','ready','served','cancelled'].map(st=>`<option value="${st}" ${orderFilter===st?'selected':''}>${st==='all'?'ทุกสถานะ':statusLabel[st]}</option>`).join('')}</select><button class="btn plain" onclick="refresh()">↻ รีเฟรช</button></div></div>${orderCards(shown,true)}`}
