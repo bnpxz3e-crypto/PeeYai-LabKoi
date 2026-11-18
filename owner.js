@@ -23,51 +23,283 @@ function kitchenView(){const active=activeOrders();const names=['waiting','cooki
 function orderCards(list,counter=false){return `<div class="order-card-grid">${list.length?list.map(o=>`<article class="card order-card"><div class="order-card-head"><div><span class="order-id">${esc(o.number)}</span>${counter?`<button type="button" class="receipt-print-btn" onclick="printReceipt('${o.id}')" title="พิมพ์ใบเสร็จบิล ${esc(o.number)}" aria-label="พิมพ์ใบเสร็จบิล ${esc(o.number)}">🖨️ พิมพ์</button>`:''}<div class="order-table">โต๊ะ ${esc(o.table_code)} · ${timeStr(o.created_at)}</div></div><span class="badge ${o.status}">${statusLabel[o.status]}</span></div><div class="order-card-items">${o.items.map(i=>`<div><span><b>${i.qty}×</b> ${esc(i.name)}${optionsText(i.options)?`<small class="order-options">${esc(optionsText(i.options))}</small>`:''}</span><span>${money(i.price*i.qty)}</span></div>`).join('')}</div><div class="order-card-total"><span>ยอดรวม</span><strong>${money(o.total)}</strong></div><div class="order-card-payment"><span class="badge ${o.payment_status==='paid'?'paid':'unpaid'}">${o.payment_status==='paid'?'✓ ชำระแล้ว':'รอชำระเงิน'}</span></div><div class="order-card-actions">${o.status!=='cancelled'?`<button class="btn plain" onclick="editOrder('${o.id}')">แก้ไขรายการ</button><button class="btn danger" onclick="cancelOrder('${o.id}')">ยกเลิกออเดอร์</button>${counter&&o.payment_status!=='paid'?`<button class="btn green" onclick="pay('${o.id}')">ยืนยันรับเงิน</button>`:''}`:'<span class="cancelled-note">รายการนี้ถูกยกเลิกแล้ว · เก็บไว้ตรวจสอบย้อนหลัง</span>'}</div></article>`).join(''):'<div class="card empty" style="grid-column:1/-1">ยังไม่มีออเดอร์ในหมวดนี้</div>'}</div>`}
 // Print only the selected cashier bill. Printing never updates payment state.
 function printReceipt(id){
+function printReceipt(id){
  const o=orders.find(row=>String(row.id)===String(id));
  if(!o){toast('ไม่พบบิล กรุณารีเฟรชข้อมูล');return}
- const win=window.open('','_blank','width=470,height=760');
- if(!win){toast('เบราว์เซอร์บล็อกหน้าต่างพิมพ์ กรุณาอนุญาต Pop-ups สำหรับเว็บไซต์นี้');return}
- const fmt=value=>Number(value||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+ const win=window.open('','_blank','width=420,height=760');
+ if(!win){
+   toast('เบราว์เซอร์บล็อกหน้าต่างพิมพ์ กรุณาอนุญาต Pop-ups สำหรับเว็บไซต์นี้');
+   return;
+ }
+
+ const fmt=value=>Number(value||0).toLocaleString('th-TH',{
+   minimumFractionDigits:2,
+   maximumFractionDigits:2
+ });
+
  const date= new Date(o.created_at);
- const dateLabel=Number.isNaN(date.getTime())?'-':date.toLocaleString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+ const dateLabel=Number.isNaN(date.getTime())
+   ? '-'
+   : date.toLocaleString('th-TH',{
+       day:'2-digit',
+       month:'2-digit',
+       year:'numeric',
+       hour:'2-digit',
+       minute:'2-digit'
+     });
+
  const safeNumber=esc(o.number||'-');
  const safeTable=esc(o.table_code||'-');
+
  const rows=(o.items||[]).map(i=>{
    const qty=Math.max(0,Number(i.qty)||0);
+   const price=Number(i.price||0);
+   const lineTotal=qty*price;
    const opts=optionsText(i.options);
-   return `<div class="item"><div class="item-title">${esc(i.name)}</div><div class="item-values"><span>${qty} × ${fmt(i.price)}</span><strong>${fmt(qty*Number(i.price||0))}</strong></div>${opts?`<div class="item-options">${esc(opts)}</div>`:''}</div>`;
+
+   return `
+     <div class="item">
+       <div class="item-title">${esc(i.name)}</div>
+       <div class="item-values">
+         <span>${qty} x ${fmt(price)}</span>
+         <span>${fmt(lineTotal)}</span>
+       </div>
+       ${opts ? `<div class="item-options">${esc(opts)}</div>` : ''}
+     </div>
+   `;
  }).join('');
+
  const payment=o.payment_status==='paid'?'ชำระแล้ว':'ยังไม่ชำระเงิน';
  const cancelled=o.status==='cancelled';
  const status=cancelled?'ยกเลิกออเดอร์':payment;
  const total=fmt(o.total);
- // Isolated print document: does not print the counter UI or create a second sheet.
- const html=`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>ใบเสร็จ ${safeNumber}</title>
- <style>
-  *{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;color:#000;font-family:Tahoma,'Noto Sans Thai',Arial,sans-serif}
-  body{width:48mm;max-width:48mm;font-size:11px;line-height:1.45;padding:2mm 2mm 4mm;overflow-wrap:anywhere}
-  .center{text-align:center}.shop{font-size:16px;font-weight:800;margin:1mm 0}.caption{font-size:11px;font-weight:600}.sub{font-size:10px}
-  hr{border:0;border-top:1px dashed #111;margin:2.5mm 0}
-  .row{display:flex;justify-content:space-between;gap:4px}.row>span:last-child{text-align:right}
-  .item{margin:2mm 0;break-inside:avoid;page-break-inside:avoid}.item-title{font-size:12px;font-weight:600}
-  .item-values{display:flex;justify-content:space-between;gap:5px}.item-options{font-size:10px;margin-top:1mm;padding-left:1mm}
-  .total{font-size:15px;font-weight:800}.paid{text-align:center;font-size:12px;font-weight:700;margin:2mm 0}
-  @page{margin:0}
-  @media screen{body{margin:18px auto;box-shadow:0 1px 14px #aaa;background:#fff;min-height:75mm}}
-  @media print{html,body{width:48mm!important;max-width:48mm!important;margin:0!important;padding:0!important}body{padding:2mm 2mm 4mm!important}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
- </style></head><body>
- <div class="center sub">ร้านอาหารอีสาน</div><div class="shop center">พี่ใหญ่ลาบก้อย</div>
- <div class="caption center">${cancelled?'สำเนาบิลที่ยกเลิก':o.payment_status==='paid'?'ใบเสร็จรับเงิน':'ใบแจ้งยอดชำระเงิน'}</div>
- <hr><div class="row"><span>เลขบิล</span><b>${safeNumber}</b></div>
- <div class="row"><span>โต๊ะ</span><b>${safeTable}</b></div>
- <div class="row"><span>วันที่</span><span>${esc(dateLabel)}</span></div><hr>
- ${rows||'<div>ไม่มีรายการอาหาร</div>'}<hr>
- <div class="row total"><span>ยอดรวม</span><span>฿${total}</span></div>
- <div class="paid">${status}</div><hr>
- <div class="center sub">ขอบคุณที่มาอุดหนุน</div><div class="center sub">ร้านพี่ใหญ่ลาบก้อย</div>
- <script>window.addEventListener('load',()=>{setTimeout(()=>{window.focus();window.print()},280)});<\/script>
- </body></html>`;
- win.document.open();win.document.write(html);win.document.close();
+
+ const html=`<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>ใบเสร็จ ${safeNumber}</title>
+<style>
+  *{
+    box-sizing:border-box;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+
+  @page{
+    size:58mm auto;
+    margin:0;
+  }
+
+  html,body{
+    margin:0;
+    padding:0;
+    width:58mm !important;
+    max-width:58mm !important;
+    background:#fff;
+    color:#111;
+    font-family:Tahoma, "Noto Sans Thai", Arial, sans-serif;
+    font-size:10.5px;
+    line-height:1.28;
+    font-weight:400;
+  }
+
+  body{
+    overflow-wrap:anywhere;
+  }
+
+  .receipt{
+    width:58mm;
+    padding:0.8mm 1.0mm 1.2mm;
+  }
+
+  .center{text-align:center}
+
+  .shop{
+    font-size:20px;
+    line-height:1.05;
+    font-weight:500;
+    margin:0 0 1.2mm 0;
+    letter-spacing:0;
+  }
+
+  .caption{
+    font-size:12px;
+    font-weight:500;
+    margin:0 0 1.4mm 0;
+  }
+
+  .line{
+    border-top:1px dashed #666;
+    margin:1.4mm 0;
+  }
+
+  .row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:4px;
+    margin:0.3mm 0;
+    font-weight:400;
+  }
+
+  .label{
+    font-weight:400;
+  }
+
+  .value{
+    text-align:right;
+    font-weight:400;
+  }
+
+  .item{
+    margin:1.2mm 0;
+    page-break-inside:avoid;
+    break-inside:avoid;
+  }
+
+  .item-title{
+    font-size:11.5px;
+    font-weight:400;
+    margin-bottom:0.4mm;
+  }
+
+  .item-values{
+    display:flex;
+    justify-content:space-between;
+    gap:5px;
+    font-size:10.8px;
+    font-weight:400;
+  }
+
+  .item-options{
+    margin-top:0.5mm;
+    font-size:10px;
+    font-weight:400;
+  }
+
+  .total-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    margin-top:0.6mm;
+  }
+
+  .total-label{
+    font-size:16px;
+    font-weight:600;
+    line-height:1.1;
+  }
+
+  .total-value{
+    font-size:16px;
+    font-weight:600;
+    line-height:1.1;
+  }
+
+  .paid{
+    text-align:center;
+    font-size:12px;
+    font-weight:500;
+    margin:1.4mm 0;
+  }
+
+  .footer{
+    text-align:center;
+    font-size:10px;
+    font-weight:400;
+    line-height:1.25;
+    margin-top:1mm;
+  }
+
+  @media screen{
+    body{
+      margin:12px auto;
+      box-shadow:0 1px 12px rgba(0,0,0,.15);
+      min-height:70mm;
+    }
+  }
+
+  @media print{
+    html,body{
+      margin:0 !important;
+      padding:0 !important;
+      width:58mm !important;
+      max-width:58mm !important;
+    }
+
+    body{
+      -webkit-print-color-adjust:exact;
+      print-color-adjust:exact;
+    }
+
+    .receipt{
+      width:58mm !important;
+      padding:0.8mm 1.0mm 1.2mm !important;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="receipt">
+    <div class="shop center">พี่ใหญ่ลาบก้อย</div>
+    <div class="caption center">
+      ${cancelled ? 'สำเนาบิลที่ยกเลิก' : (o.payment_status==='paid' ? 'ใบเสร็จรับเงิน' : 'ใบแจ้งยอดชำระเงิน')}
+    </div>
+
+    <div class="line"></div>
+
+    <div class="row">
+      <span class="label">เลขบิล</span>
+      <span class="value">${safeNumber}</span>
+    </div>
+
+    <div class="row">
+      <span class="label">โต๊ะ</span>
+      <span class="value">${safeTable}</span>
+    </div>
+
+    <div class="row">
+      <span class="label">วันที่</span>
+      <span class="value">${esc(dateLabel)}</span>
+    </div>
+
+    <div class="line"></div>
+
+    ${rows || '<div class="item-title">ไม่มีรายการอาหาร</div>'}
+
+    <div class="line"></div>
+
+    <div class="total-row">
+      <span class="total-label">ยอดรวม</span>
+      <span class="total-value">฿${total}</span>
+    </div>
+
+    <div class="paid">${status}</div>
+
+    <div class="line"></div>
+
+    <div class="footer">
+      ขอบคุณที่มาอุดหนุน<br>
+      พี่ใหญ่ลาบก้อย
+    </div>
+  </div>
+
+  <script>
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        window.focus();
+        window.print();
+      }, 250);
+    });
+  <\/script>
+</body>
+</html>`;
+
+ win.document.open();
+ win.document.write(html);
+ win.document.close();
 }
 function simpleOrderTable(list,counter=false){return orderCards(list,counter)}
 function counterView(){let active=activeOrders();let paid=active.filter(x=>x.payment_status==='paid');let unpaid=active.filter(x=>x.payment_status!=='paid');let shown=counterFilter==='all'?active:active.filter(x=>x.payment_status===counterFilter);return `<div class="stats">${stat('รับชำระแล้ว',money(paid.reduce((s,x)=>s+Number(x.total),0)),'฿')}${stat('รอชำระ',money(unpaid.reduce((s,x)=>s+Number(x.total),0)),'◷')}${stat('ออเดอร์ทั้งหมด',active.length,'▤')}${stat('ชำระแล้ว',paid.length,'✓')}</div><div class="section-title"><div><span class="section-eyebrow">CASHIER</span><h2>บิลและการชำระเงิน</h2><p>ตรวจสอบยอดก่อนกดยืนยันรับเงิน · ระบบชำระออนไลน์ยังไม่เปิด</p></div><div class="subnav"><button class="${counterFilter==='all'?'active':''}" onclick="counterFilter='all';render()">ทั้งหมด</button><button class="${counterFilter==='unpaid'?'active':''}" onclick="counterFilter='unpaid';render()">รอชำระ</button><button class="${counterFilter==='paid'?'active':''}" onclick="counterFilter='paid';render()">ชำระแล้ว</button></div></div>${orderCards(shown,true)}`}
