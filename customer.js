@@ -47,7 +47,7 @@ function renderCart(){
   el.innerHTML=cart.length?cart.map(l=>{
     let m=menu.find(x=>x.id===l.id);if(!m)return '';
     return `<div class="cart-row"><div class="cart-emoji">${esc(m.emoji)}</div><div class="detail"><strong>${esc(m.name)}</strong><small>${money(m.price*l.qty)}</small><div class="qty"><button aria-label="ลดจำนวน" onclick="qty(${m.id},-1)">−</button><span>${l.qty}</span><button aria-label="เพิ่มจำนวน" onclick="qty(${m.id},1)">+</button></div></div></div>`
-  }).join(''):'<div class="empty"><span class="big">🛒</span>ยังไม่มีรายการอาหาร<br>กดปุ่ม “เพิ่ม” ที่เมนูอาหารด้านซ้าย</div>';
+  }).join(''):'<div class="empty"><span class="big">🛒</span>ยังไม่มีรายการอาหาร<br>กดปุ่ม “เพิ่ม” ที่เมนูอาหาร</div>';
   document.getElementById('cartTotal').textContent=money(cart.reduce((s,l)=>s+(menu.find(x=>x.id===l.id)?.price||0)*l.qty,0));
   document.getElementById('submit').disabled=!cart.length;
 }
