@@ -1,4 +1,36 @@
 <!DOCTYPE html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>พี่ใหญ่ลาบก้อย POS | สั่งอาหาร</title><link rel="stylesheet" href="style.css"></head><body>
-<div id="demoNote" class="demo-ribbon hidden">โหมดตัวอย่าง: ข้อมูลเชื่อมกันเฉพาะแท็บในเบราว์เซอร์เดียวกัน หากต้องการใช้ข้ามเครื่องให้ตั้งค่า Supabase</div>
-<main class="customer-shell"><header class="customer-head"><div class="brand"><div class="logo-square">🍽️</div><div><strong>พี่ใหญ่ลาบก้อย</strong><small>Restaurant · Order Online</small></div></div><div class="table-tag" id="tableHeader">โต๊ะ ...</div></header><div class="hero"><div><div class="round-pill" style="margin-bottom:12px">✦ ยินดีต้อนรับ</div><h1>อร่อยทุกมื้อ ที่พี่ใหญ่ลาบก้อย 🌶️</h1><p>เลือกอาหารที่ชอบ แล้วส่งรายการเข้าครัวได้ทันที</p></div><div class="hero-art">🍱</div></div><div id="pageArea"><div class="customer-grid"><div><div class="section-title"><div><h2>เมนูอาหาร</h2><p>อาหารสดใหม่ ปรุงตามออเดอร์</p></div></div><div class="filters" id="filters"></div><div id="foods" class="food-grid"></div><div class="section-title"><div><h2>ติดตามออเดอร์</h2><p>แสดงเฉพาะออเดอร์ที่คุณส่งจากเครื่องนี้</p></div></div><div id="tracking"></div></div><aside class="card cart-panel"><div class="cart-head"><h2>🛒 รายการของคุณ</h2><span class="round-pill" id="cartTable">โต๊ะ ...</span></div><div id="cartItems"></div><div class="totals"><span>ยอดรวม</span><span id="cartTotal" style="color:var(--coral)">฿0</span></div><button id="submit" class="btn primary wide">ส่งออเดอร์เข้าครัว →</button><p class="tiny muted" style="text-align:center;margin:12px 0 0">ยังไม่เปิดชำระเงินออนไลน์ · ชำระที่เคาน์เตอร์</p></aside></div></div></main><div class="toast" id="toast"></div>
+<div id="demoNote" class="demo-ribbon hidden">โหมดตัวอย่าง: ถ้าต้องการใช้ข้ามหลายเครื่อง ให้เชื่อม Supabase ก่อน</div>
+<main class="customer-shell">
+  <header class="customer-head">
+    <div class="brand"><div class="logo-square">🍽️</div><div><strong>พี่ใหญ่ลาบก้อย</strong><small>สั่งอาหารด้วยมือถือ · ใช้งานง่าย</small></div></div>
+    <div class="table-tag" id="tableHeader">โต๊ะ ...</div>
+  </header>
+  <div class="hero">
+    <div>
+      <div class="round-pill" style="margin-bottom:12px">✦ ยินดีต้อนรับ</div>
+      <h1>อร่อยทุกมื้อ ที่พี่ใหญ่ลาบก้อย 🌶️</h1>
+      <p>เลือกเมนูอาหารที่ต้องการ แล้วกดปุ่ม <b>เพิ่ม</b> จากนั้นตรวจรายการทางขวา และกด <b>ส่งออเดอร์เข้าครัว</b></p>
+    </div>
+    <div class="hero-art">🍱</div>
+  </div>
+  <div id="pageArea">
+    <div class="customer-grid">
+      <div>
+        <div class="section-title"><div><h2>เมนูอาหาร</h2><p>กดเลือกหมวดหมู่ แล้วกดปุ่มเพิ่มได้ทันที</p></div></div>
+        <div class="filters" id="filters"></div>
+        <div id="foods" class="food-grid"></div>
+        <div class="section-title"><div><h2>ติดตามออเดอร์</h2><p>แสดงเฉพาะออเดอร์ที่ส่งจากเครื่องนี้</p></div></div>
+        <div id="tracking"></div>
+      </div>
+      <aside class="card cart-panel">
+        <div class="cart-head"><h2>🛒 รายการของคุณ</h2><span class="round-pill" id="cartTable">โต๊ะ ...</span></div>
+        <div id="cartItems"></div>
+        <div class="totals"><span>ยอดรวม</span><span id="cartTotal" style="color:var(--coral)">฿0</span></div>
+        <button id="submit" class="btn primary wide">ส่งออเดอร์เข้าครัว</button>
+        <p class="tiny muted" style="text-align:center;margin:12px 0 0">ชำระเงินที่เคาน์เตอร์</p>
+      </aside>
+    </div>
+  </div>
+</main>
+<div class="toast" id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script><script src="config.js"></script><script src="shared.js"></script><script src="customer.js"></script></body></html>
