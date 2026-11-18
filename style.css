@@ -387,3 +387,9 @@ body{background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans Thai',Prom
  .staff-body{padding:14px 12px 30px}
  .toast{bottom:94px}
 }
+
+/* Cashier: print shortcut beside bill number */
+.order-card-head .receipt-print-btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid #cfa69c;background:#fff8f4;color:#8d1c2e;border-radius:9px;padding:7px 10px;margin-left:9px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;vertical-align:middle;min-height:36px}
+.order-card-head .receipt-print-btn:hover{background:#fbeae4}
+.order-card-head .order-id{display:inline-block}
+@media(max-width:650px){.order-card-head .receipt-print-btn{margin-left:5px;padding:6px 8px;font-size:12px}}
