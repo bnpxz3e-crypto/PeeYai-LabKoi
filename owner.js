@@ -78,98 +78,55 @@ function printReceipt(id){
  const docTitle=cancelled ? 'สำเนาบิลที่ยกเลิก' : (o.payment_status==='paid' ? 'ใบเสร็จรับเงินอย่างย่อ' : 'ใบแจ้งยอดชำระเงิน');
 
  const html=`<!doctype html>
-<html lang="th">
-<head>
-<meta charset="utf-8">
-<title>ใบเสร็จ ${safeNumber}</title>
+<html lang="th"><head><meta charset="utf-8"><title>ใบเสร็จ ${safeNumber}</title>
 <style>
-  *{box-sizing:border-box;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
-  @page{size:58mm auto;margin:0}
-  html,body{margin:0;padding:0;width:58mm !important;max-width:58mm !important;background:#fff;color:#222;font-family:Tahoma,"Noto Sans Thai",Arial,sans-serif;font-size:11.2px;line-height:1.25;font-weight:400}
-  body{overflow-wrap:anywhere}
-  .receipt{width:58mm;padding:0.2mm 0.3mm 0.8mm}
-  .center{text-align:center}
-  .logo-wrap{display:flex;justify-content:center;align-items:center;margin:0 0 0.8mm}
-  .logo{width:24mm;height:24mm;object-fit:cover;border-radius:50%;display:block}
-  .doc-title{text-align:center;font-size:12.4px;font-weight:400;margin:0 0 1mm}
-  .store-name{text-align:center;font-size:15px;font-weight:400;letter-spacing:.15px;margin:0 0 0.8mm}
-  .line{border-top:1px dashed #777;margin:1.1mm 0}
-  .meta-row{display:flex;justify-content:space-between;gap:3px;margin:0.35mm 0;font-size:11.2px;font-weight:400}
-  .meta-label{font-weight:400}
-  .meta-value{text-align:right;font-weight:400}
-  .section-name{font-size:12.2px;font-weight:400;margin:0 0 0.6mm}
-  .cols-head{display:grid;grid-template-columns:1fr 6.5mm 12.5mm 13.5mm;gap:1.5px;font-size:10px;color:#333;margin-bottom:0.6mm}
-  .cols-head > div{text-align:right}
-  .cols-head .name{text-align:left}
-  .item-row{margin:0.65mm 0 0.95mm;page-break-inside:avoid;break-inside:avoid}
-  .item-grid{display:grid;grid-template-columns:1fr 6.5mm 12.5mm 13.5mm;gap:1.5px;align-items:start}
-  .item-name{font-size:11.4px;font-weight:400;text-align:left;padding-right:1px}
-  .col{font-size:11.4px;font-weight:400;text-align:right}
-  .item-note{font-size:10.1px;font-weight:400;color:#333;padding-top:0.25mm;padding-left:0;white-space:pre-wrap}
-  .total-wrap{margin-top:0.3mm}
-  .total-row{display:flex;justify-content:space-between;align-items:flex-end;gap:3px}
-  .total-label{font-size:16.8px;font-weight:500;line-height:1.02}
-  .total-value{font-size:16.8px;font-weight:500;line-height:1.02}
-  .status{text-align:center;font-size:12px;font-weight:400;margin:0.9mm 0 0.35mm}
-  .footer{text-align:center;font-size:10.4px;font-weight:400;line-height:1.3;margin-top:0.55mm}
-  .footer strong{font-weight:400}
-  @media screen{body{margin:12px auto;box-shadow:0 1px 12px rgba(0,0,0,.15);min-height:74mm}}
-  @media print{html,body{margin:0 !important;padding:0 !important;width:58mm !important;max-width:58mm !important}body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.receipt{width:58mm !important;padding:0.2mm 0.3mm 0.8mm !important}}
-</style>
-</head>
-<body>
-  <div class="receipt">
-    <div class="logo-wrap"><img class="logo" src="${logoSrc}" alt="โลโก้พี่ใหญ่ลาบก้อย"></div>
-    <div class="store-name">พี่ใหญ่ลาบก้อย</div>
-    <div class="doc-title">${docTitle}</div>
-
-    <div class="line"></div>
-
-    <div class="meta-row"><span class="meta-label">เลขที่ใบเสร็จ</span><span class="meta-value">${safeNumber}</span></div>
-    <div class="meta-row"><span class="meta-label">โต๊ะ</span><span class="meta-value">${safeTable}</span></div>
-    <div class="meta-row"><span class="meta-label">วันที่</span><span class="meta-value">${esc(dateLabel)}</span></div>
-    <div class="meta-row"><span class="meta-label">แคชเชียร์</span><span class="meta-value">1</span></div>
-
-    <div class="line"></div>
-
-    <div class="section-name">รายการ</div>
-    <div class="cols-head">
-      <div class="name">รายการ</div>
-      <div>จำนวน</div>
-      <div>ราคา</div>
-      <div>รวม</div>
-    </div>
-
-    ${rows || '<div class="item-name">ไม่มีรายการอาหาร</div>'}
-
-    <div class="line"></div>
-
-    <div class="total-wrap">
-      <div class="total-row">
-        <span class="total-label">ยอดชำระสุทธิ</span>
-        <span class="total-value">${total}</span>
-      </div>
-      <div class="status">${status}</div>
-    </div>
-
-    <div class="line"></div>
-
-    <div class="footer">
-      <strong>*** ขอบคุณที่ใช้บริการ ***</strong><br>
-      พี่ใหญ่ลาบก้อย
-    </div>
-  </div>
-
-  <script>
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        window.focus();
-        window.print();
-      }, 250);
-    });
-  <\/script>
-</body>
-</html>`;
+ *{box-sizing:border-box;-webkit-font-smoothing:antialiased}
+ @page{size:58mm auto;margin:0}
+ html,body{width:58mm;max-width:58mm;margin:0;padding:0;background:#fff;color:#242424;font-family:Tahoma,"Noto Sans Thai",Arial,sans-serif;font-weight:400;font-size:16px;line-height:1.25}
+ body{overflow-wrap:break-word}
+ .receipt{width:58mm;padding:0.2mm .4mm 1mm}
+ .logo-wrap{display:flex;justify-content:center;margin:0 auto 1.3mm}
+ .logo{display:block;width:31mm;height:31mm;object-fit:contain}
+ .doc-title{text-align:center;font-size:17px;font-weight:400;margin:0 0 1mm;line-height:1.25}
+ .line{border:0;border-top:1px dashed #777;margin:1.8mm 0}
+ .meta-row{display:flex;justify-content:space-between;align-items:baseline;gap:3px;font-size:16px;margin:0.55mm 0;font-weight:400}
+ .meta-row span:last-child{text-align:right}
+ .meta-date{font-size:14px}
+ .section-name{font-size:17px;font-weight:400;margin:0 0 .9mm}
+ /* At 58mm, larger type needs a two-line item to prevent price columns colliding. */
+ .item-head{display:grid;grid-template-columns:minmax(0,1fr) 9mm 14mm 14mm;gap:1px;align-items:baseline;font-size:13px;border-bottom:1px dashed #aaa;margin-bottom:1.1mm;padding-bottom:.65mm}
+ .item-head div:not(:first-child){text-align:right}
+ .item-row{margin:1.5mm 0 2mm;break-inside:avoid;page-break-inside:avoid}
+ .item-grid{display:grid;grid-template-columns:minmax(0,1fr) 9mm 14mm 14mm;gap:1px;align-items:baseline}
+ .item-name{font-size:17px;line-height:1.25;font-weight:400;overflow-wrap:anywhere}
+ .item-grid .col{font-size:16px;line-height:1.3;font-weight:400;text-align:right;white-space:nowrap}
+ .item-note{font-size:15px;line-height:1.24;color:#333;margin:.45mm 0 0;white-space:pre-wrap}
+ .total-row{display:flex;justify-content:space-between;align-items:baseline;gap:3px;font-weight:400}
+ .total-label,.total-value{font-size:20px;font-weight:400;line-height:1.2}
+ .status{text-align:center;font-size:17px;font-weight:400;margin:1.4mm 0}
+ .footer{text-align:center;font-size:15px;font-weight:400;line-height:1.25;margin:1mm 0 0}
+ .footer strong{font-weight:400}
+ @media screen{body{margin:12px auto;box-shadow:0 1px 12px #bbb;min-height:70mm}}
+ @media print{html,body{width:58mm!important;max-width:58mm!important;margin:0!important;padding:0!important}.receipt{width:58mm!important;padding:.2mm .4mm 1mm!important}}
+</style></head><body>
+<div class="receipt">
+ <div class="logo-wrap"><img class="logo" src="${logoSrc}" alt="โลโก้ร้านขาวดำ"></div>
+ <div class="doc-title">${docTitle}</div>
+ <div class="line"></div>
+ <div class="meta-row"><span>เลขที่ ${safeNumber}</span><span>โต๊ะ ${safeTable}</span></div>
+ <div class="meta-row meta-date"><span>${esc(dateLabel)}</span><span>แคชเชียร์ 1</span></div>
+ <div class="line"></div>
+ <div class="section-name">รายการอาหาร</div>
+ <div class="item-head"><div>รายการ</div><div>จำนวน</div><div>ราคา</div><div>รวม</div></div>
+ ${rows || '<div class="item-name">ไม่มีรายการอาหาร</div>'}
+ <div class="line"></div>
+ <div class="total-row"><span class="total-label">ยอดชำระสุทธิ</span><span class="total-value">${total}</span></div>
+ <div class="status">${status}</div>
+ <div class="line"></div>
+ <div class="footer"><strong>*** ขอบคุณที่ใช้บริการ ***</strong></div>
+</div>
+<script>window.addEventListener('load',()=>{setTimeout(()=>{window.focus();window.print()},300)});<\/script>
+</body></html>`;
 
  win.document.open();
  win.document.write(html);
