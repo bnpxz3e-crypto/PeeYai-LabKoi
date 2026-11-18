@@ -34,6 +34,21 @@ function listenDemo(callback){window.addEventListener('storage',e=>{if(e.key===K
 const api={
  async menus(all=false){if(!cloud)return readDemo().menu.filter(x=>all||x.active);let q=supa.from('menu_items').select('*').order('id');if(!all)q=q.eq('active',true);const {data,error}=await q;if(error)throw error;return data.map(m=>({...m,description:m.description||''}))},
  async tables(){if(!cloud)return readDemo().tables;const {data,error}=await supa.from('restaurant_tables').select('code').eq('active',true).order('code');if(error)throw error;return data.map(x=>x.code)},
+ async tableAdd(code){
+  code=String(code||'').trim().replace(/\s+/g,' ').toUpperCase();
+  if(!code || code.length>32 || /[<>\\"'`]/.test(code))throw Error('ชื่อโต๊ะต้องมี 1-32 ตัวอักษร และไม่มีเครื่องหมายพิเศษ');
+  if(!cloud){const d=readDemo();if(d.tables.includes(code))throw Error('มีโต๊ะนี้แล้ว');d.tables.push(code);d.tables.sort();writeDemo(d);inform();return}
+  const {data:existing,error:checkError}=await supa.from('restaurant_tables').select('code,active').eq('code',code).maybeSingle();
+  if(checkError)throw checkError;
+  const result=existing?await supa.from('restaurant_tables').update({active:true}).eq('code',code):await supa.from('restaurant_tables').insert({code,active:true});
+  if(result.error)throw result.error;
+ },
+ async tableRemove(code){
+  if(!cloud){const d=readDemo();d.tables=d.tables.filter(t=>t!==code);writeDemo(d);inform();return}
+  // Soft delete: preserve historical orders and their foreign-key references.
+  const {error}=await supa.from('restaurant_tables').update({active:false}).eq('code',code);
+  if(error)throw error;
+ },
  async place(table,items){if(!cloud){let d=readDemo();if(!d.tables.includes(table))throw Error('ไม่พบโต๊ะนี้');let lines=items.map(i=>{let m=d.menu.find(x=>x.id===i.id&&x.active);if(!m||i.qty<1||i.qty>99)throw Error('รายการอาหารไม่ถูกต้อง');return {menu_id:m.id,name:m.name,price:Number(m.price),qty:i.qty,emoji:m.emoji}});let order={id:token(),number:'A-'+d.nextOrderId++,table_code:table,token:token(),items:lines,total:lines.reduce((s,x)=>s+x.price*x.qty,0),status:'waiting',payment_status:'unpaid',created_at:new Date().toISOString()};d.orders.unshift(order);writeDemo(d);inform();return {order_id:order.id,track_token:order.token,number:order.number}}const {data,error}=await supa.rpc('place_order',{p_table:table,p_items:items.map(i=>({id:i.id,qty:i.qty}))});if(error)throw error;return data},
  async tracking(t){if(!cloud){const o=readDemo().orders.find(x=>x.token===t);return o||null}const {data,error}=await supa.rpc('track_order',{p_token:t});if(error)throw error;return data},
  async orders(){if(!cloud)return readDemo().orders;const {data,error}=await supa.from('orders').select('*,order_items(*)').order('created_at',{ascending:false}).limit(500);if(error)throw error;return data.map(o=>({...o,items:(o.order_items||[]).map(i=>({menu_id:i.menu_id,name:i.name,price:Number(i.price),qty:i.qty,emoji:i.emoji}))}))},
@@ -45,5 +60,5 @@ const api={
  async authenticate(email,password){if(!cloud)return true;const {error}=await supa.auth.signInWithPassword({email,password});if(error)throw error;const {data,error:e}=await supa.from('staff_roles').select('role').eq('user_id',(await supa.auth.getUser()).data.user.id).maybeSingle();if(e||data?.role!=='owner'){await supa.auth.signOut();throw Error('บัญชีนี้ไม่มีสิทธิ์เจ้าของร้าน')}return true},
  async isOwner(){if(!cloud)return sessionStorage.getItem('mori-demo-owner')==='yes';const {data:{user}}=await supa.auth.getUser();if(!user)return false;const {data}=await supa.from('staff_roles').select('role').eq('user_id',user.id).maybeSingle();return data?.role==='owner'},
  async logout(){if(!cloud)sessionStorage.removeItem('mori-demo-owner');else await supa.auth.signOut()},
- subscribe(callback){if(!cloud){listenDemo(callback);return}const ch=supa.channel('mori-owner').on('postgres_changes',{event:'*',schema:'public',table:'orders'},callback).on('postgres_changes',{event:'*',schema:'public',table:'order_items'},callback).on('postgres_changes',{event:'*',schema:'public',table:'menu_items'},callback).subscribe();return ()=>supa.removeChannel(ch)}
+ subscribe(callback){if(!cloud){listenDemo(callback);return}const ch=supa.channel('mori-owner').on('postgres_changes',{event:'*',schema:'public',table:'orders'},callback).on('postgres_changes',{event:'*',schema:'public',table:'order_items'},callback).on('postgres_changes',{event:'*',schema:'public',table:'menu_items'},callback).on('postgres_changes',{event:'*',schema:'public',table:'restaurant_tables'},callback).subscribe();return ()=>supa.removeChannel(ch)}
 };
