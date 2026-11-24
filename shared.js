@@ -66,6 +66,17 @@ const api={
  },
  async menuDelete(id){if(!cloud){let d=readDemo();d.menu=d.menu.filter(x=>x.id!==id);writeDemo(d);inform();return}const {error}=await supa.from('menu_items').delete().eq('id',id);if(error)throw error},
  async orderStatus(id,status){if(!cloud){let d=readDemo();let o=d.orders.find(x=>x.id===id);if(!o)throw Error('ไม่พบออเดอร์');o.status=status;writeDemo(d);inform();return}const {error}=await supa.from('orders').update({status}).eq('id',id);if(error)throw error},
+ async checkoutTable(table){
+  if(!cloud){
+    const d=readDemo();const related=d.orders.filter(o=>o.table_code===table&&o.status!=='cancelled'&&o.payment_status!=='paid');
+    if(!related.length)throw Error('ไม่มีบิลรอชำระ');
+    related.forEach(o=>o.payment_status='paid');writeDemo(d);inform();
+    return {order_count:related.length,total:related.reduce((s,o)=>s+Number(o.total||0),0)};
+  }
+  const {data,error}=await supa.rpc('owner_checkout_table',{p_table:table});
+  if(error)throw error;
+  return data;
+ },
  async payment(id,paid){if(!cloud){let d=readDemo();let o=d.orders.find(x=>x.id===id);if(!o)throw Error('ไม่พบออเดอร์');o.payment_status=paid?'paid':'unpaid';writeDemo(d);inform();return}const {error}=await supa.from('orders').update({payment_status:paid?'paid':'unpaid'}).eq('id',id);if(error)throw error},
  async editOrder(id,lines){
   if(!cloud){let d=readDemo();let o=d.orders.find(x=>x.id===id);if(!o)throw Error('ไม่พบออเดอร์');o.items=lines.map(i=>{let m=d.menu.find(x=>x.id===i.id);if(!m)throw Error('ไม่พบเมนู');let opts=normalizedOptions(i.options);return {menu_id:m.id,name:m.name,price:unitPrice(m,opts),qty:i.qty,emoji:m.emoji,options:opts}});o.total=o.items.reduce((a,x)=>a+x.qty*x.price,0);writeDemo(d);inform();return}
