@@ -60,7 +60,7 @@ function closeCustomerCart(){
 }
 window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCustomerCart()});
 async function submit(){if(!cart.length)return;if(!confirm('ยืนยันส่งออเดอร์โต๊ะ '+table+' เข้าครัวใช่ไหม?'))return;let b=document.getElementById('submit');b.disabled=true;
- try{let r=await api.place(table,cart);tokens.unshift(r.track_token);tokens=tokens.slice(0,15);saveTokens();cart=[];renderCart();closeCustomerCart();toast('ส่งออเดอร์ '+r.number+' สำเร็จ สามารถสั่งเพิ่มได้');await tracking()}
+ try{let r=await api.place(table,cart);tokens.unshift(r.track_token);tokens=tokens.slice(0,15);saveTokens();cart=[];renderCart();closeCustomerCart();toast('✅ ส่งออเดอร์ '+r.number+' เข้าครัวแล้ว · ระบบส่งงานพิมพ์ให้อัตโนมัติเมื่อ Android ออนไลน์');await tracking()}
  catch(e){toast('ส่งไม่สำเร็จ: '+e.message)}finally{b.disabled=!cart.length}
 }
 async function tracking(){let node=document.getElementById('tracking');if(!node)return;try{
