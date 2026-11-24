@@ -16,6 +16,8 @@
       categories.get(category).push(card);
     });
     const sorted = [...categories.keys()].sort((a, b) => {
+      if (a === 'เครื่องดื่ม') return 1;
+      if (b === 'เครื่องดื่ม') return -1;
       const ia = preferred.indexOf(a), ib = preferred.indexOf(b);
       return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
     });
