@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>เครื่องพิมพ์ครัว | พี่ใหญ่ลาบก้อย</title><link rel="stylesheet" href="kitchen-print.css"></head>
+<body>
+<header><div><small>PEEYAI · KITCHEN PRINT STATION</small><h1>🖨️ เครื่องพิมพ์ห้องครัว</h1><p>เปิดหน้านี้ไว้บนเครื่องที่เชื่อม POS58 ตลอดเวลาทำการ</p></div><a href="owner.html">กลับหน้าจัดการร้าน</a></header>
+<main>
+<section class="panel controls"><div class="status"><span id="signal" class="dot"></span><strong id="connection">กำลังเชื่อมต่อ…</strong><small id="statusDetail">โปรดเข้าสู่ระบบเจ้าของร้านก่อน</small></div><div class="actions"><button id="enable" disabled>เปิดพิมพ์อัตโนมัติ</button><button id="test" disabled class="secondary">ทดลองพิมพ์</button><button id="scan" disabled class="secondary">ตรวจออเดอร์ตอนนี้</button></div></section>
+<section class="panel"><h2>ออเดอร์ที่ตรวจพบ <span id="total">0</span></h2><p class="hint">แต่ละรอบสั่งพิมพ์เป็นใบครัวแยกกัน · เครื่องนี้บันทึกรายการที่สั่งพิมพ์แล้วเพื่อไม่ส่งซ้ำเมื่อรีเฟรช</p><div id="orders" class="order-list"><p>กำลังโหลด…</p></div></section>
+<section class="panel"><h2>การตั้งค่าการพิมพ์</h2><p>ต้องใช้ Chrome บน Windows ที่ติดตั้ง POS58 และเปิดด้วย <code>--kiosk-printing</code> เพื่อข้ามหน้าต่างพิมพ์ เครื่องพิมพ์ต้องตั้งเป็น Default Printer</p><p class="warn">Android/RawBT: หน้านี้ไม่รับประกันว่าจะพิมพ์โดยไม่แตะจอ เพราะ Android อาจบล็อกการเปิดแอปพิมพ์โดยไม่มีการกดจากผู้ใช้</p><p class="hint">ควรเปิดเครื่องพิมพ์ก่อนเริ่มใช้งาน และตรวจผลพิมพ์จริง ระบบเว็บไม่สามารถยืนยันได้ว่ากระดาษออกสำเร็จ</p></section>
+</main>
+<div id="printHost" aria-hidden="true"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script><script src="config.js"></script><script src="shared.js"></script><script src="kitchen-print.js?v=1"></script>
+</body></html>
