@@ -1,5 +1,5 @@
 let view='overview',orders=[],menus=[],tables=[],sound=false,initialized=false,refreshing=false,lastIds=new Set(),counterFilter='all',orderFilter='all';
-const viewMeta={overview:['ภาพรวมร้าน','ภาพรวมออเดอร์และการดำเนินงาน'],kitchen:['ห้องครัว','ติดตามและจัดการสถานะอาหารแบบเรียลไทม์'],counter:['เคาน์เตอร์','ตรวจสอบบิลและรับชำระเงิน (ด้วยมือ)'],orders:['จัดการออเดอร์','แก้ไขและยกเลิกออเดอร์ได้ทุกสถานะ'],menu:['จัดการเมนู','เพิ่ม แก้ไข ลบ เปิด/ปิดการขาย'],tables:['QR ประจำโต๊ะ','สร้าง QR ให้ลูกค้าสแกนแล้วเปิดหน้าสั่งอาหาร'],customer:['มุมมองลูกค้า','จำลองหน้าเว็บที่ลูกค้าเห็น โดยไม่เปิดเมนูพนักงาน']};
+const viewMeta={overview:['ภาพรวมร้าน','ภาพรวมออเดอร์และการดำเนินงาน'],kitchen:['ห้องครัว','ติดตามและจัดการสถานะอาหารแบบเรียลไทม์'],counter:['เคาน์เตอร์','ตรวจสอบบิลและรับชำระเงิน (ด้วยมือ)'],orders:['จัดการออเดอร์','แก้ไขและยกเลิกออเดอร์ได้ทุกสถานะ'],menu:['จัดการเมนู','เพิ่ม แก้ไข ลบ และจัดการของหมด'],tables:['QR ประจำโต๊ะ','สร้าง QR ให้ลูกค้าสแกนแล้วเปิดหน้าสั่งอาหาร'],customer:['มุมมองลูกค้า','จำลองหน้าเว็บที่ลูกค้าเห็น โดยไม่เปิดเมนูพนักงาน']};
 // PIN entry: a single secure input drives the six slots and opens the phone number keyboard.
 // The PIN is NOT embedded in JavaScript; Supabase Auth verifies it.
 let pinBusy=false;
@@ -379,7 +379,7 @@ async function checkoutTable(encoded){
  catch(e){toast('รับชำระไม่สำเร็จ: '+e.message)}
 }
 function ordersView(){let shown=orderFilter==='all'?orders:orders.filter(x=>x.status===orderFilter);return `<div class="section-title"><div><span class="section-eyebrow">ORDER MANAGEMENT</span><h2>รายการออเดอร์ทั้งหมด</h2><p>แก้ไขรายการอาหารและยกเลิกออเดอร์ได้ทุกสถานะ</p></div><div class="toolbar"><select class="input" style="width:auto" aria-label="เลือกสถานะ" onchange="orderFilter=this.value;render()">${['all','waiting','cooking','ready','served','cancelled'].map(st=>`<option value="${st}" ${orderFilter===st?'selected':''}>${st==='all'?'ทุกสถานะ':statusLabel[st]}</option>`).join('')}</select><button class="btn plain" onclick="refresh()">↻ รีเฟรช</button></div></div>${orderCards(shown,true)}`}
-function menuView(){return `<div class="section-title"><div><span class="section-eyebrow">MENU MANAGEMENT</span><h2>จัดการเมนูอาหาร</h2><p>แก้ชื่อ ราคา คำอธิบาย และตัวเลือกท็อปปิ้ง / ความเผ็ด / พิเศษ</p></div><button class="btn primary" onclick="editMenu()">+ เพิ่มเมนูใหม่</button></div><div class="menu-admin-grid">${menus.map(m=>`<article class="card admin-food text-only-admin"><div class="admin-food-info"><span class="food-category">${esc(m.category)}</span><h3>${esc(m.name)}</h3><p class="small muted">${esc(m.description||'ไม่มีคำอธิบาย')}</p><strong class="price">${money(m.price)}</strong><div class="menu-state"><span class="badge ${m.active?'ready':'cancelled'}">${m.active?'เปิดขาย':'ปิดขาย'}</span></div><div class="actions"><button class="btn plain" onclick="editMenu(${m.id})">แก้ไข</button><button class="btn ${m.active?'plain':'green'}" onclick="toggleMenu(${m.id})">${m.active?'ปิดขาย':'เปิดขาย'}</button><button class="btn danger" onclick="deleteMenu(${m.id})">ลบ</button></div></div></article>`).join('')||'<div class="card empty">ยังไม่มีเมนู</div>'}</div>`}
+function menuView(){return `<div class="section-title"><div><span class="section-eyebrow">MENU MANAGEMENT</span><h2>จัดการเมนูอาหาร</h2><p>แก้ชื่อ ราคา คำอธิบาย และตัวเลือกท็อปปิ้ง / ความเผ็ด / พิเศษ</p></div><button class="btn primary" onclick="editMenu()">+ เพิ่มเมนูใหม่</button></div><div class="menu-admin-grid">${menus.map(m=>`<article class="card admin-food text-only-admin"><div class="admin-food-info"><span class="food-category">${esc(m.category)}</span><h3>${esc(m.name)}</h3><p class="small muted">${esc(m.description||'ไม่มีคำอธิบาย')}</p><strong class="price">${money(m.price)}</strong><div class="menu-state"><span class="badge ${m.active?'ready':'cancelled'}">${m.active?'พร้อมขาย':'ของหมด'}</span></div><div class="actions"><button class="btn plain" onclick="editMenu(${m.id})">แก้ไข</button><button class="btn ${m.active?'plain':'green'}" onclick="toggleMenu(${m.id})">${m.active?'ตั้งเป็นของหมด':'เปิดขายอีกครั้ง'}</button><button class="btn danger" onclick="deleteMenu(${m.id})">ลบ</button></div></div></article>`).join('')||'<div class="card empty">ยังไม่มีเมนู</div>'}</div>`}
 function qrUrl(t){return new URL('index.html?table='+encodeURIComponent(t),location.href).href}
 function tablesView(){return `<div class="section-title"><div><h2>QR Code ประจำโต๊ะ</h2><p>เพิ่มโต๊ะเมื่อไรก็ได้ · สแกนแล้วเปิดหน้าเมนูลูกค้าโดยตรง</p></div><button class="btn primary" onclick="window.print()">🖨️ พิมพ์ QR ทั้งหมด</button></div>
 <div class="card no-print" style="padding:20px;margin-bottom:20px"><label for="newTableCode"><b>เพิ่มโต๊ะใหม่</b></label><div class="toolbar" style="margin-top:10px;gap:10px;flex-wrap:wrap"><input id="newTableCode" class="input" maxlength="32" placeholder="เช่น A-07 หรือ โต๊ะ VIP 1" style="max-width:330px" onkeydown="if(event.key==='Enter')addTable()"><button class="btn primary" onclick="addTable()">+ สร้างโต๊ะและ QR</button></div><p class="small muted" style="margin-top:8px">การลบโต๊ะเป็นการปิดใช้งาน QR โต๊ะนั้น ออเดอร์เก่ายังคงอยู่</p></div>
@@ -394,18 +394,59 @@ function setStatus(id,st){perform(()=>api.orderStatus(id,st),'เปลี่ย
 function cancelOrder(id){let o=orders.find(x=>x.id===id);if(!o)return;if(!confirm('ต้องการลบออเดอร์ '+o.number+' (โต๊ะ '+o.table_code+') ออกจากคิวใช่ไหม?\n\nระบบจะเปลี่ยนเป็น ยกเลิก และเก็บประวัติบิลไว้ตรวจสอบ'))return;perform(()=>api.orderStatus(id,'cancelled'),'ยกเลิกออเดอร์แล้ว')}
 function pay(id){let o=orders.find(x=>x.id===id);if(!o)return;if(!confirm('ยืนยันว่าได้รับเงินสด/โอนแล้วจริง '+money(o.total)+' สำหรับบิล '+o.number+' ?'))return;perform(()=>api.payment(id,true),'บันทึกรับเงิน '+money(o.total)+' แล้ว')}
 function editMenu(id){
- let m=menus.find(x=>x.id===id)||{name:'',category:'เมนูเนื้อ',emoji:'🍽️',price:'',description:'',active:true,allow_toppings:false,allow_spicy:false,allow_special:false,special_price:0,topping_options:[]};
- const opts=['ไข่ดาว','ไข่เจียว','ไข่ต้ม'];
- let el=modal(`<div class="form-kicker">แก้ไขข้อมูลเมนู</div><h2>${id?'แก้ไขเมนูอาหาร':'เพิ่มเมนูใหม่'}</h2><p class="muted small">ไม่ต้องใส่รูป ใช้ชื่ออาหารและราคาเป็นหลัก</p><form id="menuForm">
- <div class="field-row"><div><label>ชื่อเมนู *</label><input name="name" class="input" required maxlength="100" value="${esc(m.name)}" placeholder="เช่น ลาบหมู"></div><div><label>ราคา (บาท) *</label><input name="price" class="input" type="number" min="0" step="0.01" required value="${esc(m.price)}"></div></div>
- <div class="field-row"><div><label>หมวดหมู่</label><input name="category" list="categoryOptions" class="input" required maxlength="80" value="${esc(m.category)}"><datalist id="categoryOptions">${['เมนูเนื้อ','เมนูหมู','ส้มตำ','จานเดียว/อื่นๆ','เครื่องดื่ม'].map(c=>`<option value="${c}">`).join('')}</datalist></div><div><label>คำอธิบาย</label><input name="description" class="input" maxlength="300" value="${esc(m.description||'')}" placeholder="คำอธิบายสั้น ๆ (ไม่บังคับ)"></div></div>
- <div class="option-section"><h3>ตัวเลือกของเมนู</h3><label class="check-row"><input type="checkbox" id="allowToppings" ${m.allow_toppings?'checked':''}> ให้ลูกค้าเลือกท็อปปิ้งได้</label><div id="toppingPrices" class="topping-price-grid">${opts.map(t=>{let v=(m.topping_options||[]).find(x=>x.name===t);return `<label>${t} เพิ่มเงิน (บาท)<input class="input" type="number" min="0" step="0.01" id="top_${t}" value="${Number(v?.price||0)}"></label>`}).join('')}</div><label class="check-row"><input type="checkbox" id="allowSpicy" ${m.allow_spicy?'checked':''}> ให้ลูกค้าเลือกระดับความเผ็ด</label><label class="check-row"><input type="checkbox" id="allowSpecial" ${m.allow_special?'checked':''}> มีตัวเลือกปริมาณ “พิเศษ”</label><label>ราคาบวกเพิ่มสำหรับพิเศษ (บาท)</label><input class="input" id="specialPrice" type="number" min="0" step="0.01" value="${Number(m.special_price||0)}"></div>
- <label class="check-row"><input type="checkbox" id="menuActive" ${m.active?'checked':''}> เปิดขายเมนูนี้</label><div class="modal-actions"><button type="button" class="btn plain" onclick="closeModal()">ย้อนกลับ</button><button class="btn primary" id="saveMenu" type="submit">บันทึกเมนู</button></div></form>`);
- el.querySelector('form').onsubmit=async e=>{e.preventDefault();let f=e.target,b=el.querySelector('#saveMenu');b.disabled=true;
- try{let toppings=opts.map(n=>({name:n,price:Number(el.querySelector('[id="top_'+n+'"]').value)}));let specialPrice=Number(el.querySelector('#specialPrice').value);if(toppings.some(t=>!Number.isFinite(t.price)||t.price<0)||!Number.isFinite(specialPrice)||specialPrice<0)throw Error('ราคาบวกเพิ่มต้องเป็น 0 บาทขึ้นไป');
- let item={id:id||null,name:f.elements.name.value.trim(),price:Number(f.elements.price.value),category:f.elements.category.value.trim(),description:f.elements.description.value.trim(),emoji:'🍽️',active:el.querySelector('#menuActive').checked,allow_toppings:el.querySelector('#allowToppings').checked,allow_spicy:el.querySelector('#allowSpicy').checked,allow_special:el.querySelector('#allowSpecial').checked,special_price:specialPrice,topping_options:toppings};
- if(!item.name||!item.category||!Number.isFinite(item.price)||item.price<0)throw Error('กรุณากรอกข้อมูลให้ครบ');await api.menuSave(item);closeModal();toast('บันทึกเมนูแล้ว');await refresh();}
- catch(err){toast('บันทึกไม่สำเร็จ: '+err.message)}finally{b.disabled=false}
+ const m=menus.find(x=>x.id===id)||{name:'',category:'เมนูเนื้อ',emoji:'🍽️',price:'',description:'',active:true,allow_toppings:false,allow_spicy:false,allow_special:false,special_price:0,topping_options:[],option_groups:[]};
+ const legacy=(m.topping_options||[]).filter(o=>o.name!=='ไข่ต้ม');
+ let groups=Array.isArray(m.option_groups)&&m.option_groups.length?JSON.parse(JSON.stringify(m.option_groups)):
+ (m.allow_toppings&&legacy.length?[{id:'legacy',title:'ท็อปปิ้ง (ไม่บังคับ)',enabled:true,items:legacy.map(t=>({name:t.name,price:Number(t.price||0)}))}]:[]);
+ let serial=Date.now();
+ const key=()=>String(++serial);
+ const safe=s=>esc(String(s??''));
+ let el=modal(`<div class="form-kicker">จัดการเมนูอาหาร</div><h2>${id?'แก้ไขเมนู':'เพิ่มเมนูใหม่'}</h2><p class="small muted">ตั้งค่าหมวดตัวเลือกได้เอง และเปิด/ปิดแต่ละหัวข้อได้</p><form id="menuForm">
+ <div class="field-row"><div><label>ชื่อเมนู *</label><input class="input" name="name" maxlength="100" required value="${safe(m.name)}"></div><div><label>ราคา (บาท) *</label><input class="input" name="price" type="number" min="0" step="0.01" required value="${safe(m.price)}"></div></div>
+ <div class="field-row"><div><label>หมวดหมู่ *</label><input class="input" name="category" list="categoryOptions" maxlength="80" required value="${safe(m.category)}"><datalist id="categoryOptions">${['เมนูเนื้อ','เมนูหมู','ส้มตำ','จานเดียว/อื่นๆ','เครื่องดื่ม'].map(c=>`<option value="${c}">`).join('')}</datalist></div><div><label>คำอธิบาย</label><input class="input" name="description" maxlength="300" value="${safe(m.description)}"></div></div>
+ <div class="option-section"><div class="custom-group-heading"><h3>ตัวเลือกของเมนู</h3><button id="addGroup" class="btn sm primary" type="button">+ เพิ่มหัวข้อ</button></div><div id="customGroups"></div></div>
+ <div class="option-section"><label class="check-row"><input id="allowSpicy" type="checkbox" ${m.allow_spicy?'checked':''}> เปิดระดับความเผ็ด (ไม่เผ็ด / เผ็ดกลาง / เผ็ดมาก)</label><label class="check-row"><input id="allowSpecial" type="checkbox" ${m.allow_special?'checked':''}> เปิดตัวเลือกขนาด ปกติ / พิเศษ</label><label>เพิ่มเงินสำหรับพิเศษ (บาท)</label><input class="input" id="specialPrice" type="number" min="0" step="0.01" value="${Number(m.special_price||0)}"></div>
+ <label class="check-row"><input id="menuActive" type="checkbox" ${m.active?'checked':''}> พร้อมขาย (ปิดแล้วลูกค้าจะเห็น “หมดชั่วคราว”)</label>
+ <div class="modal-actions"><button type="button" class="btn plain" onclick="closeModal()">ปิด</button><button class="btn primary" id="saveMenu" type="submit">บันทึกเมนู</button></div></form>`);
+ function draw(){
+  const root=el.querySelector('#customGroups');
+  root.innerHTML=groups.map((g,gi)=>`<section class="custom-option-group" data-g="${gi}">
+  <div class="custom-group-head"><label class="check-row"><input type="checkbox" data-act="enable" data-g="${gi}" ${g.enabled!==false?'checked':''}> เปิดหัวข้อนี้</label>
+  <span class="group-title-display">${safe(g.title||'หัวข้อใหม่')}</span><button type="button" class="group-edit btn sm plain" data-act="edit" data-g="${gi}">✎ แก้ไข</button><button type="button" class="btn sm danger" data-act="remove" data-g="${gi}">ลบหัวข้อ</button></div>
+  <div class="group-edit-field hidden"><input class="input" maxlength="90" value="${safe(g.title||'')}" placeholder="เช่น ท็อปปิ้ง (ไม่บังคับ)"><button type="button" class="btn sm green" data-act="confirm" data-g="${gi}">✓</button><button type="button" class="btn sm plain" data-act="cancel" data-g="${gi}">✕</button></div>
+  <div class="custom-options">${(g.items||[]).map((item,ii)=>`<div class="custom-option-line"><input class="input" aria-label="ชื่อตัวเลือก" data-field="name" data-g="${gi}" data-i="${ii}" maxlength="100" value="${safe(item.name)}"><input class="input" aria-label="ราคาเพิ่ม" data-field="price" data-g="${gi}" data-i="${ii}" type="number" min="0" step="0.01" value="${Number(item.price||0)}"><button class="btn sm danger" type="button" data-act="remove-item" data-g="${gi}" data-i="${ii}">✕</button></div>`).join('')}</div>
+  <button class="btn sm plain" type="button" data-act="add-item" data-g="${gi}">+ เพิ่มตัวเลือกและราคา</button></section>`).join('')||'<p class="small muted">ยังไม่มีหัวข้อ กด + เพิ่มหัวข้อ เพื่อเริ่มสร้าง</p>';
+ }
+ el.querySelector('#addGroup').onclick=()=>{groups.push({id:key(),title:'หัวข้อใหม่',enabled:true,items:[]});draw();const ix=groups.length-1;el.querySelector(`[data-act="edit"][data-g="${ix}"]`)?.click()};
+ el.querySelector('#customGroups').addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;
+  const gi=Number(b.dataset.g),g=groups[gi];if(!g)return;
+  const wrap=el.querySelector(`.custom-option-group[data-g="${gi}"]`);
+  switch(b.dataset.act){
+   case 'edit':wrap.querySelector('.group-edit-field').classList.remove('hidden');wrap.querySelector('.group-title-display').classList.add('hidden');wrap.querySelector('.group-edit-field input').focus();break;
+   case 'confirm':{const title=wrap.querySelector('.group-edit-field input').value.trim();if(!title)return toast('กรุณากรอกชื่อหัวข้อ');g.title=title;draw();break}
+   case 'cancel':draw();break;
+   case 'remove':if(confirm('ลบหัวข้อนี้และตัวเลือกทั้งหมดหรือไม่?')){groups.splice(gi,1);draw()}break;
+   case 'add-item':g.items.push({name:'',price:0});draw();wrap.querySelector('[data-field="name"]:last-of-type')?.focus();break;
+   case 'remove-item':g.items.splice(Number(b.dataset.i),1);draw();break;
+  }
+ });
+ el.querySelector('#customGroups').addEventListener('change',e=>{const t=e.target;if(t.dataset.act==='enable')groups[Number(t.dataset.g)].enabled=t.checked;});
+ el.querySelector('#customGroups').addEventListener('input',e=>{let t=e.target;if(!t.dataset.field)return;let item=groups[Number(t.dataset.g)]?.items?.[Number(t.dataset.i)];if(item)item[t.dataset.field]=t.dataset.field==='price'?t.value:t.value;});
+ draw();
+ el.querySelector('#menuForm').onsubmit=async e=>{e.preventDefault();let f=e.target,b=el.querySelector('#saveMenu');b.disabled=true;
+  try{
+   const seen=new Set(),flatten=[];const cleaned=[];
+   for(const g of groups){const title=(g.title||'').trim();if(!title)throw Error('กรุณาตั้งชื่อหัวข้อ');const items=[];
+    for(const o of g.items||[]){const name=String(o.name||'').trim(),price=Number(o.price);if(!name||!Number.isFinite(price)||price<0)throw Error('ชื่อและราคาตัวเลือกไม่ถูกต้อง');if(seen.has(name))throw Error('ชื่อตัวเลือกซ้ำ: '+name+' (ต้องไม่ซ้ำกันข้ามหัวข้อ)');seen.add(name);items.push({name,price});if(g.enabled!==false)flatten.push({name,price});}
+    cleaned.push({id:String(g.id||key()),title,enabled:g.enabled!==false,items});
+   }
+   const specialPrice=Number(el.querySelector('#specialPrice').value);
+   if(!Number.isFinite(specialPrice)||specialPrice<0)throw Error('ราคาพิเศษต้องไม่ติดลบ');
+   const item={id:id||null,name:f.elements.name.value.trim(),price:Number(f.elements.price.value),category:f.elements.category.value.trim(),description:f.elements.description.value.trim(),emoji:'🍽️',active:el.querySelector('#menuActive').checked,allow_toppings:flatten.length>0,allow_spicy:el.querySelector('#allowSpicy').checked,allow_special:el.querySelector('#allowSpecial').checked,special_price:specialPrice,topping_options:flatten,option_groups:cleaned};
+   if(!item.name||!item.category||!Number.isFinite(item.price)||item.price<0)throw Error('กรอกชื่อ ราคา และหมวดหมู่ให้ครบ');
+   await api.menuSave(item);closeModal();toast('บันทึกเมนูเรียบร้อย');await refresh();
+  }catch(err){toast('บันทึกไม่สำเร็จ: '+err.message)}finally{b.disabled=false}
  };
 }
 function toggleMenu(id){let m=menus.find(x=>x.id===id);perform(()=>api.menuSave({...m,active:!m.active}),'อัปเดตสถานะเมนูแล้ว')}
