@@ -23,16 +23,28 @@ function setFilter(i){filter=window.__categories[i];render()}
 function chooseItem(id){
  const m=menu.find(x=>x.id===id);if(!m)return;
  if(!m.active){toast('เมนูนี้หมดชั่วคราว กรุณาเลือกเมนูอื่น');return}
- const groups=Array.isArray(m.option_groups)&&m.option_groups.length?m.option_groups.filter(g=>g.enabled!==false):
- (m.allow_toppings?[{title:'ท็อปปิ้ง (ไม่บังคับ)',items:(m.topping_options||[]).filter(x=>x.name!=='ไข่ต้ม')}]:[]);
+ const groups=Array.isArray(m.option_groups)&&m.option_groups.length?m.option_groups.filter(g=>g.enabled!==false&&(g.items||[]).length):
+ (m.allow_toppings?[{kind:'topping',title:'ท็อปปิ้ง (ไม่บังคับ)',items:(m.topping_options||[]).filter(x=>x.name!=='ไข่ต้ม')}]:[]);
+ const meatGroups=groups.filter(g=>g.kind==='meat'||/^ประเภทเนื้อ\s*$/.test(String(g.title||'').trim()));
+ const toppingGroups=groups.filter(g=>g.kind==='topping'||/^ท็อปปิ้ง/.test(String(g.title||'').trim()));
+ const otherGroups=groups.filter(g=>!meatGroups.includes(g)&&!toppingGroups.includes(g));
+ const drawGroup=(g,kind)=>`<div class="option-section" data-option-kind="${kind}"><h3>${esc(g.title)}</h3>${kind==='meat'?'<p class="small muted max-two-note">เลือกประเภทเนื้อได้สูงสุด 2 อย่าง</p>':''}${(g.items||[]).map(t=>`<label class="option-line"><span><input type="checkbox" name="topping" data-kind="${kind}" value="${esc(t.name)}"> ${esc(t.name)}</span><b>${Number(t.price)>0?'+'+money(t.price):'ฟรี'}</b></label>`).join('')}</div>`;
  let el=modal(`<div class="form-kicker">เลือกรายละเอียดอาหาร</div><h2>${esc(m.name)}</h2><p class="small muted">ราคาเริ่มต้น ${money(m.price)}</p><form id="chooseFoodForm">
- ${groups.map((g,gi)=>`<div class="option-section"><h3>${esc(g.title)}</h3>${(g.items||[]).map(t=>`<label class="option-line"><span><input type="checkbox" name="topping" value="${esc(t.name)}"> ${esc(t.name)}</span><b>${Number(t.price)>0?'+'+money(t.price):'ฟรี'}</b></label>`).join('')}</div>`).join('')}
- ${m.allow_spicy?`<div class="option-section"><h3>ระดับความเผ็ด</h3><div class="spice-options">${['ไม่เผ็ด','เผ็ดกลาง','เผ็ดมาก'].map((x,i)=>`<label class="spice-choice"><input type="radio" name="spice" value="${x}" ${i===1?'checked':''}><span>${x}</span></label>`).join('')}</div></div>`:''}
+ ${meatGroups.map(g=>drawGroup(g,'meat')).join('')}
  ${m.allow_special?`<div class="option-section"><h3>ขนาด</h3><label class="option-line"><span><input type="radio" name="size" value="normal" checked> ปกติ</span><b>ไม่เพิ่มราคา</b></label><label class="option-line"><span><input type="radio" name="size" value="special"> พิเศษ</span><b>${Number(m.special_price)>0?'+'+money(m.special_price):'ราคาเท่าปกติ'}</b></label></div>`:''}
+ ${toppingGroups.map(g=>drawGroup(g,'topping')).join('')}
+ ${m.allow_spicy?`<div class="option-section"><h3>ระดับความเผ็ด</h3><div class="spice-options">${['ไม่เผ็ด','เผ็ดกลาง','เผ็ดมาก'].map((x,i)=>`<label class="spice-choice"><input type="radio" name="spice" value="${x}" ${i===1?'checked':''}><span>${x}</span></label>`).join('')}</div></div>`:''}
+ ${otherGroups.map(g=>drawGroup(g,'custom')).join('')}
  <div class="option-section"><label for="extraNote">เพิ่มเติม</label><textarea class="input" id="extraNote" name="note" maxlength="300" rows="3" placeholder="เช่น ไม่ใส่ผัก ไม่ใส่กระเทียม (ไม่บังคับ)"></textarea></div>
  <div class="option-section"><label for="choiceQty">จำนวน</label><input id="choiceQty" class="input" type="number" inputmode="numeric" min="1" max="30" value="1"></div>
  <div class="modal-actions"><button type="button" class="btn plain" onclick="closeModal()">ปิด</button><button class="btn primary" type="submit">เพิ่มลงตะกร้า</button></div></form>`);
+ // Do not let more than two meat choices be selected (applies to any meat group).
+ el.querySelectorAll('input[data-kind="meat"]').forEach(cb=>cb.addEventListener('change',()=>{
+  const chosen=[...el.querySelectorAll('input[data-kind="meat"]:checked')];
+  if(chosen.length>2){cb.checked=false;toast('ประเภทเนื้อเลือกได้สูงสุด 2 อย่าง');}
+ }));
  el.querySelector('form').onsubmit=e=>{e.preventDefault();let form=e.target;let qty=Number(el.querySelector('#choiceQty').value);if(!Number.isInteger(qty)||qty<1||qty>30){toast('กรุณาเลือกจำนวน 1–30');return}
+ if(form.querySelectorAll('input[data-kind="meat"]:checked').length>2){toast('ประเภทเนื้อเลือกได้สูงสุด 2 อย่าง');return}
  let options={toppings:[...form.querySelectorAll('[name=topping]:checked')].map(x=>x.value),spice:form.querySelector('[name=spice]:checked')?.value||'',special:form.querySelector('[name=size]:checked')?.value==='special',note:el.querySelector('#extraNote').value.trim()};
  addLine(m,qty,options);closeModal()};
 }
