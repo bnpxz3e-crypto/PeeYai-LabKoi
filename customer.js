@@ -47,8 +47,20 @@ function renderCart(){
  document.getElementById('cartTotal').textContent=money(cart.reduce((s,l)=>{let m=menu.find(x=>x.id===l.id);return s+(m?unitPrice(m,l.options)*l.qty:0)},0));document.getElementById('submit').disabled=!cart.length;
  const jump=document.getElementById('mobileCartJump');if(jump)jump.classList.toggle('has-items',cart.length>0);const count=document.getElementById('mobileCartCount');if(count)count.textContent=cart.reduce((n,x)=>n+x.qty,0)+' รายการ';const total=document.getElementById('mobileCartTotal');if(total)total.textContent=document.getElementById('cartTotal').textContent;
 }
+function openCustomerCart(){
+  if(!window.matchMedia('(max-width:700px)').matches){document.getElementById('cartPanel')?.scrollIntoView({behavior:'smooth'});return;}
+  document.body.classList.add('cart-drawer-open');
+  document.getElementById('cartDrawerBackdrop').hidden=false;
+  document.getElementById('mobileCartJump')?.setAttribute('aria-expanded','true');
+}
+function closeCustomerCart(){
+  document.body.classList.remove('cart-drawer-open');
+  document.getElementById('cartDrawerBackdrop').hidden=true;
+  document.getElementById('mobileCartJump')?.setAttribute('aria-expanded','false');
+}
+window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCustomerCart()});
 async function submit(){if(!cart.length)return;if(!confirm('ยืนยันส่งออเดอร์โต๊ะ '+table+' เข้าครัวใช่ไหม?'))return;let b=document.getElementById('submit');b.disabled=true;
- try{let r=await api.place(table,cart);tokens.unshift(r.track_token);tokens=tokens.slice(0,15);saveTokens();cart=[];renderCart();toast('ส่งออเดอร์ '+r.number+' สำเร็จ');await tracking()}
+ try{let r=await api.place(table,cart);tokens.unshift(r.track_token);tokens=tokens.slice(0,15);saveTokens();cart=[];renderCart();closeCustomerCart();toast('ส่งออเดอร์ '+r.number+' สำเร็จ สามารถสั่งเพิ่มได้');await tracking()}
  catch(e){toast('ส่งไม่สำเร็จ: '+e.message)}finally{b.disabled=!cart.length}
 }
 async function tracking(){let node=document.getElementById('tracking');if(!node)return;try{
