@@ -2,7 +2,7 @@ let view='overview',orders=[],menus=[],tables=[],sound=false,initialized=false,r
 const viewMeta={overview:['ภาพรวมร้าน','ภาพรวมออเดอร์และการดำเนินงาน'],kitchen:['ห้องครัว','ติดตามและจัดการสถานะอาหารแบบเรียลไทม์'],counter:['เคาน์เตอร์','ตรวจสอบบิลและรับชำระเงิน (ด้วยมือ)'],orders:['จัดการออเดอร์','แก้ไขและยกเลิกออเดอร์ได้ทุกสถานะ'],menu:['จัดการเมนู','เพิ่ม แก้ไข ลบ เปิด/ปิดการขาย'],tables:['QR ประจำโต๊ะ','สร้าง QR ให้ลูกค้าสแกนแล้วเปิดหน้าสั่งอาหาร'],customer:['มุมมองลูกค้า','จำลองหน้าเว็บที่ลูกค้าเห็น โดยไม่เปิดเมนูพนักงาน']};
 // PIN entry: a single secure input drives the six slots and opens the phone number keyboard.
 // The PIN is NOT embedded in JavaScript; Supabase Auth verifies it.
-let pinBusy=false, pinFailures=0, pinBlockUntil=0;
+let pinBusy=false;
 async function init(){
   const input=document.getElementById('pinInput');
   input.addEventListener('input',()=>{
@@ -35,45 +35,50 @@ function drawPin(){
 }
 async function login(){
   const input=document.getElementById('pinInput');
+  const errorBox=document.getElementById('pinError');
+  const button=document.getElementById('loginBtn');
   const pin=input.value;
   if(pinBusy)return;
-  if(!/^\d{6}$/.test(pin)){document.getElementById('pinError').textContent='กรุณากรอกรหัส PIN ให้ครบ 6 หลัก';input.focus();return;}
-  const errorBox=document.getElementById('pinError');
-  if(Date.now()<pinBlockUntil){
-    errorBox.textContent='ลองรหัสหลายครั้งเกินไป กรุณาลองใหม่ภายหลัง';
-    input.value='';drawPin();return;
+  if(!/^\d{6}$/.test(pin)){
+    errorBox.textContent='กรุณากรอกรหัส PIN ให้ครบ 6 หลัก';
+    input.focus();return;
   }
-  if(!cloud){errorBox.textContent='ไม่สามารถเชื่อมต่อระบบเข้าสู่ระบบได้';return}
-  pinBusy=true;
-  input.disabled=true;
-  const loginButton=document.getElementById('loginBtn');
-  loginButton.disabled=true;
-  loginButton.textContent='กำลังตรวจสอบ...';
-  errorBox.textContent='กำลังตรวจสอบรหัส...';
-  drawPin();
+  if(!cloud){errorBox.textContent='ไม่ได้เชื่อมต่อ Supabase';return;}
+  pinBusy=true;input.disabled=true;button.disabled=true;
+  button.textContent='กำลังตรวจสอบ...';errorBox.textContent='';
   try{
-    const email=String(window.MORI_OWNER_LOGIN_EMAIL||'').trim();
-    if(!email)throw Error('ยังไม่ได้ตั้งค่าบัญชีเจ้าของร้าน');
-    await api.authenticate(email,pin);
-    if(!await api.isOwner()){
-      await api.logout();
-      throw Error('บัญชีนี้ไม่ได้รับสิทธิ์เจ้าของร้าน');
+    // Server-side hash verification; never embed actual PIN in GitHub files.
+    const {data:payload,error:invokeError}=await supa.functions.invoke('owner-pin-login',{
+      body:{pin}
+    });
+    if(invokeError){
+      // Supabase may return an HTTP error body through FunctionsHttpError.
+      let reason='ไม่สามารถตรวจสอบรหัสได้';
+      try{const body=await invokeError.context?.json();if(body?.error)reason=body.error}catch{}
+      throw Error(reason);
     }
-    pinFailures=0;
-    input.value='';
+    if(!payload?.token_hash)throw Error(payload?.error||'ไม่สามารถตรวจสอบรหัสได้');
+    const {error:verifyError}=await supa.auth.verifyOtp({
+      token_hash:payload.token_hash,
+      type:'magiclink'
+    });
+    if(verifyError)throw Error('ไม่สามารถสร้างการเข้าสู่ระบบได้');
+    if(!await api.isOwner()){
+      await supa.auth.signOut({scope:'local'});
+      throw Error('บัญชีนี้ไม่มีสิทธิ์เจ้าของร้าน');
+    }
+    input.value='';drawPin();
     await enter();
   }catch(e){
-    pinFailures++;
-    if(pinFailures>=5){pinBlockUntil=Date.now()+60000;pinFailures=0}
-    errorBox.textContent=(e.message==='บัญชีนี้ไม่ได้รับสิทธิ์เจ้าของร้าน')?'ไม่มีสิทธิ์เจ้าของร้าน':
-      (e.message==='ยังไม่ได้ตั้งค่าบัญชีเจ้าของร้าน')?e.message:'รหัสผิด';
-    input.value='';
+    // Expected incorrect PIN messages and server-side lockout are displayed clearly.
+    const message=String(e?.message||'');
+    errorBox.textContent=message.includes('ล็อกชั่วคราว')?message:
+      message.includes('ไม่มีสิทธิ์')?message:
+      message.includes('ไม่สามารถ')?message:'รหัสผิด';
+    input.value='';drawPin();input.focus();
   }finally{
-    pinBusy=false;
-    input.disabled=false;
-    loginButton.disabled=false;
-    loginButton.textContent='เข้าสู่ระบบ →';
-    drawPin();
+    pinBusy=false;input.disabled=false;button.disabled=false;
+    button.textContent='เข้าสู่ระบบ →';
   }
 }
 async function enter(){if(!await api.isOwner())return;document.getElementById('login').classList.add('hidden');document.getElementById('ownerApp').classList.remove('hidden');document.getElementById('branch').textContent=cfg.branchName||'ร้านอาหาร พี่ใหญ่ลาบก้อย';await refresh(true);api.subscribe(()=>refresh());setInterval(()=>refresh(),15000)}
