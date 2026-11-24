@@ -1,0 +1,1471 @@
+[
+  {
+    "name": "ส้มวัว",
+    "price": 25,
+    "category": "เมนูเนื้อ",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "ต้มแห้ง",
+    "price": 100,
+    "category": "เมนูเนื้อ",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": true,
+    "allow_special": true,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "ต้มขม",
+    "price": 100,
+    "category": "เมนูเนื้อ",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": true,
+    "allow_special": true,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "ต้มแซ่บ",
+    "price": 100,
+    "category": "เมนูเนื้อ",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": true,
+    "allow_special": true,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "อุเพี้ย",
+    "price": 100,
+    "category": "เมนูเนื้อ",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": true,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "อ่อมเนื้อ",
+    "price": 100,
+    "category": "เมนูเนื้อ",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": true,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "น้ำตกขม",
+    "price": 100,
+    "category": "เมนูเนื้อ",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": true,
+    "allow_special": true,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "น้ำตกเปรี้ยว",
+    "price": 100,
+    "category": "เมนูเนื้อ",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": true,
+    "allow_special": true,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "ลาบสุกขม",
+    "price": 100,
+    "category": "เมนูเนื้อ",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": true,
+    "allow_special": true,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "ลาบสุกเปรี้ยว",
+    "price": 100,
+    "category": "เมนูเนื้อ",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": true,
+    "allow_special": true,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "ก้อยขม",
+    "price": 100,
+    "category": "เมนูเนื้อ",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": true,
+    "allow_special": true,
+    "special_price": 0,
+    "allow_toppings": true,
+    "topping_options": [
+      {
+        "name": "สับ",
+        "price": 0
+      },
+      {
+        "name": "ซอย",
+        "price": 0
+      }
+    ],
+    "option_groups": [
+      {
+        "id": "catalog--",
+        "kind": "custom",
+        "title": "ลักษณะเนื้อ",
+        "enabled": true,
+        "items": [
+          {
+            "name": "สับ",
+            "price": 0
+          },
+          {
+            "name": "ซอย",
+            "price": 0
+          }
+        ],
+        "max_select": 1
+      }
+    ]
+  },
+  {
+    "name": "ก้อยมะนาว(เปรี้ยว)",
+    "price": 100,
+    "category": "เมนูเนื้อ",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": true,
+    "allow_special": true,
+    "special_price": 0,
+    "allow_toppings": true,
+    "topping_options": [
+      {
+        "name": "สับ",
+        "price": 0
+      },
+      {
+        "name": "ซอย",
+        "price": 0
+      }
+    ],
+    "option_groups": [
+      {
+        "id": "catalog--",
+        "kind": "custom",
+        "title": "ลักษณะเนื้อ",
+        "enabled": true,
+        "items": [
+          {
+            "name": "สับ",
+            "price": 0
+          },
+          {
+            "name": "ซอย",
+            "price": 0
+          }
+        ],
+        "max_select": 1
+      }
+    ]
+  },
+  {
+    "name": "ซอยจุ๊",
+    "price": 100,
+    "category": "เมนูเนื้อ",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "ย่างลิ้น",
+    "price": 100,
+    "category": "เมนูเนื้อ",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "ย่างเสือ",
+    "price": 100,
+    "category": "เมนูเนื้อ",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "ซกเล็ก",
+    "price": 100,
+    "category": "เมนูเนื้อ",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "ลวกจิ้ม",
+    "price": 100,
+    "category": "เมนูเนื้อ",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "ตับหวาน",
+    "price": 100,
+    "category": "เมนูเนื้อ",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "เนื้อแดดเดียว",
+    "price": 100,
+    "category": "เมนูเนื้อ",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "ชุดแจ่วฮ้อน",
+    "price": 300,
+    "category": "เมนูเนื้อ",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "ลาบหมู",
+    "price": 100,
+    "category": "เมนูหมู",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": true,
+    "allow_special": true,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "น้ำตกหมู",
+    "price": 100,
+    "category": "เมนูหมู",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": true,
+    "allow_special": true,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "อ่อมหมู",
+    "price": 100,
+    "category": "เมนูหมู",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": true,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "คอหมูย่าง",
+    "price": 100,
+    "category": "เมนูหมู",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "หมูแดดเดียว",
+    "price": 100,
+    "category": "เมนูหมู",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "ตำปูปลาร้า",
+    "price": 50,
+    "category": "ส้มตำ",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": true,
+    "allow_special": true,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "ตำไทย",
+    "price": 50,
+    "category": "ส้มตำ",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": true,
+    "allow_special": true,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "ตำถั่ว",
+    "price": 50,
+    "category": "ส้มตำ",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": true,
+    "allow_special": true,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "ตำแตง",
+    "price": 50,
+    "category": "ส้มตำ",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": true,
+    "allow_special": true,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "ตำกุ้งสด",
+    "price": 100,
+    "category": "ส้มตำ",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": true,
+    "allow_special": true,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "ข้าวผัด",
+    "price": 50,
+    "category": "จานเดียว",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": true,
+    "allow_special": true,
+    "special_price": 0,
+    "allow_toppings": true,
+    "topping_options": [
+      {
+        "name": "เนื้อ",
+        "price": 0
+      },
+      {
+        "name": "หมู",
+        "price": 0
+      },
+      {
+        "name": "กุ้ง",
+        "price": 0
+      },
+      {
+        "name": "ไก่",
+        "price": 0
+      },
+      {
+        "name": "หมูกรอบ",
+        "price": 0
+      },
+      {
+        "name": "ทะเล",
+        "price": 0
+      },
+      {
+        "name": "ไข่ดาว",
+        "price": 10
+      },
+      {
+        "name": "ไข่เจียว",
+        "price": 10
+      }
+    ],
+    "option_groups": [
+      {
+        "id": "catalog--",
+        "kind": "meat",
+        "title": "เลือกเนื้อสัตว์",
+        "enabled": true,
+        "items": [
+          {
+            "name": "เนื้อ",
+            "price": 0
+          },
+          {
+            "name": "หมู",
+            "price": 0
+          },
+          {
+            "name": "กุ้ง",
+            "price": 0
+          },
+          {
+            "name": "ไก่",
+            "price": 0
+          },
+          {
+            "name": "หมูกรอบ",
+            "price": 0
+          },
+          {
+            "name": "ทะเล",
+            "price": 0
+          }
+        ],
+        "max_select": 1
+      },
+      {
+        "id": "catalog--",
+        "kind": "topping",
+        "title": "ท็อปปิ้ง (ไม่บังคับ)",
+        "enabled": true,
+        "items": [
+          {
+            "name": "ไข่ดาว",
+            "price": 10
+          },
+          {
+            "name": "ไข่เจียว",
+            "price": 10
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "กะเพรา",
+    "price": 50,
+    "category": "จานเดียว",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": true,
+    "allow_special": true,
+    "special_price": 0,
+    "allow_toppings": true,
+    "topping_options": [
+      {
+        "name": "เนื้อ",
+        "price": 0
+      },
+      {
+        "name": "หมู",
+        "price": 0
+      },
+      {
+        "name": "กุ้ง",
+        "price": 0
+      },
+      {
+        "name": "ไก่",
+        "price": 0
+      },
+      {
+        "name": "หมูกรอบ",
+        "price": 0
+      },
+      {
+        "name": "ทะเล",
+        "price": 0
+      },
+      {
+        "name": "ไข่ดาว",
+        "price": 10
+      },
+      {
+        "name": "ไข่เจียว",
+        "price": 10
+      }
+    ],
+    "option_groups": [
+      {
+        "id": "catalog--",
+        "kind": "meat",
+        "title": "เลือกเนื้อสัตว์",
+        "enabled": true,
+        "items": [
+          {
+            "name": "เนื้อ",
+            "price": 0
+          },
+          {
+            "name": "หมู",
+            "price": 0
+          },
+          {
+            "name": "กุ้ง",
+            "price": 0
+          },
+          {
+            "name": "ไก่",
+            "price": 0
+          },
+          {
+            "name": "หมูกรอบ",
+            "price": 0
+          },
+          {
+            "name": "ทะเล",
+            "price": 0
+          }
+        ],
+        "max_select": 2
+      },
+      {
+        "id": "catalog--",
+        "kind": "topping",
+        "title": "ท็อปปิ้ง (ไม่บังคับ)",
+        "enabled": true,
+        "items": [
+          {
+            "name": "ไข่ดาว",
+            "price": 10
+          },
+          {
+            "name": "ไข่เจียว",
+            "price": 10
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "คะน้าหมูกรอบ",
+    "price": 50,
+    "category": "จานเดียว",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": true,
+    "allow_special": true,
+    "special_price": 0,
+    "allow_toppings": true,
+    "topping_options": [
+      {
+        "name": "เนื้อ",
+        "price": 0
+      },
+      {
+        "name": "หมู",
+        "price": 0
+      },
+      {
+        "name": "กุ้ง",
+        "price": 0
+      },
+      {
+        "name": "ไก่",
+        "price": 0
+      },
+      {
+        "name": "หมูกรอบ",
+        "price": 0
+      },
+      {
+        "name": "ทะเล",
+        "price": 0
+      },
+      {
+        "name": "ไข่ดาว",
+        "price": 10
+      },
+      {
+        "name": "ไข่เจียว",
+        "price": 10
+      }
+    ],
+    "option_groups": [
+      {
+        "id": "catalog--",
+        "kind": "meat",
+        "title": "เลือกเนื้อสัตว์",
+        "enabled": true,
+        "items": [
+          {
+            "name": "เนื้อ",
+            "price": 0
+          },
+          {
+            "name": "หมู",
+            "price": 0
+          },
+          {
+            "name": "กุ้ง",
+            "price": 0
+          },
+          {
+            "name": "ไก่",
+            "price": 0
+          },
+          {
+            "name": "หมูกรอบ",
+            "price": 0
+          },
+          {
+            "name": "ทะเล",
+            "price": 0
+          }
+        ],
+        "max_select": 2
+      },
+      {
+        "id": "catalog--",
+        "kind": "topping",
+        "title": "ท็อปปิ้ง (ไม่บังคับ)",
+        "enabled": true,
+        "items": [
+          {
+            "name": "ไข่ดาว",
+            "price": 10
+          },
+          {
+            "name": "ไข่เจียว",
+            "price": 10
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "แกงจืด",
+    "price": 100,
+    "category": "จานเดียว",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "ต้มยำน้ำข้น",
+    "price": 100,
+    "category": "จานเดียว",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": true,
+    "topping_options": [
+      {
+        "name": "หมู",
+        "price": 0
+      },
+      {
+        "name": "กุ้ง",
+        "price": 0
+      },
+      {
+        "name": "ไก่",
+        "price": 0
+      },
+      {
+        "name": "ปลานิล",
+        "price": 0
+      },
+      {
+        "name": "ทะเล",
+        "price": 0
+      },
+      {
+        "name": "รวมมิตร",
+        "price": 0
+      }
+    ],
+    "option_groups": [
+      {
+        "id": "catalog--",
+        "kind": "meat",
+        "title": "เลือกเนื้อสัตว์",
+        "enabled": true,
+        "items": [
+          {
+            "name": "หมู",
+            "price": 0
+          },
+          {
+            "name": "กุ้ง",
+            "price": 0
+          },
+          {
+            "name": "ไก่",
+            "price": 0
+          },
+          {
+            "name": "ปลานิล",
+            "price": 0
+          },
+          {
+            "name": "ทะเล",
+            "price": 0
+          },
+          {
+            "name": "รวมมิตร",
+            "price": 0
+          }
+        ],
+        "max_select": 1
+      }
+    ]
+  },
+  {
+    "name": "ต้มยำน้ำใส",
+    "price": 100,
+    "category": "จานเดียว",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": true,
+    "topping_options": [
+      {
+        "name": "หมู",
+        "price": 0
+      },
+      {
+        "name": "กุ้ง",
+        "price": 0
+      },
+      {
+        "name": "ไก่",
+        "price": 0
+      },
+      {
+        "name": "ปลานิล",
+        "price": 0
+      },
+      {
+        "name": "ทะเล",
+        "price": 0
+      },
+      {
+        "name": "รวมมิตร",
+        "price": 0
+      }
+    ],
+    "option_groups": [
+      {
+        "id": "catalog--",
+        "kind": "meat",
+        "title": "เลือกเนื้อสัตว์",
+        "enabled": true,
+        "items": [
+          {
+            "name": "หมู",
+            "price": 0
+          },
+          {
+            "name": "กุ้ง",
+            "price": 0
+          },
+          {
+            "name": "ไก่",
+            "price": 0
+          },
+          {
+            "name": "ปลานิล",
+            "price": 0
+          },
+          {
+            "name": "ทะเล",
+            "price": 0
+          },
+          {
+            "name": "รวมมิตร",
+            "price": 0
+          }
+        ],
+        "max_select": 1
+      }
+    ]
+  },
+  {
+    "name": "ข้าวไข่เจียวราดข้าว",
+    "price": 50,
+    "category": "จานเดียว",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": true,
+    "topping_options": [
+      {
+        "name": "ธรรมดา",
+        "price": 0
+      },
+      {
+        "name": "หมูสับ",
+        "price": 10
+      }
+    ],
+    "option_groups": [
+      {
+        "id": "catalog--",
+        "kind": "custom",
+        "title": "เพิ่มเติม",
+        "enabled": true,
+        "items": [
+          {
+            "name": "ธรรมดา",
+            "price": 0
+          },
+          {
+            "name": "หมูสับ",
+            "price": 10
+          }
+        ],
+        "max_select": 1
+      }
+    ]
+  },
+  {
+    "name": "ไข่เจียว(กับข้าว)",
+    "price": 80,
+    "category": "จานเดียว",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": true,
+    "topping_options": [
+      {
+        "name": "ธรรมดา",
+        "price": 0
+      },
+      {
+        "name": "หมูสับ",
+        "price": 20
+      }
+    ],
+    "option_groups": [
+      {
+        "id": "catalog--",
+        "kind": "custom",
+        "title": "เพิ่มเติม",
+        "enabled": true,
+        "items": [
+          {
+            "name": "ธรรมดา",
+            "price": 0
+          },
+          {
+            "name": "หมูสับ",
+            "price": 20
+          }
+        ],
+        "max_select": 1
+      }
+    ]
+  },
+  {
+    "name": "ข้าวสวย",
+    "price": 10,
+    "category": "เพิ่มเติม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "ข้าวเหนียว",
+    "price": 10,
+    "category": "เพิ่มเติม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "ไข่ดาว",
+    "price": 10,
+    "category": "เพิ่มเติม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "เหล้าขาว(เล็ก)",
+    "price": 75,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "เหล้าขาว(ใหญ่)",
+    "price": 150,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "แสงโสม(แบน)",
+    "price": 200,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "แสงโสม(กลม)",
+    "price": 400,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "หงส์ทอง(แบน)",
+    "price": 180,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "หงส์ทอง(กลม)",
+    "price": 400,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "รีเจนซี่(แบน)",
+    "price": 480,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "เบลนด์ 285 (แบน)",
+    "price": 220,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "เบลนด์ 285 (กลม)",
+    "price": 400,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "Red Label",
+    "price": 650,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "เบียร์ลีโอ(ป๋องสั้น)",
+    "price": 45,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "เบียร์ลีโอ(ป๋องยาว)",
+    "price": 60,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "เบียร์ลีโอ(ป๋องขวด)",
+    "price": 70,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "เบียร์ช้าง(ป๋องสั้น)",
+    "price": 45,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "เบียร์ช้าง(ป๋องยาว)",
+    "price": 60,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "เบียร์ช้าง(ป๋องขวด)",
+    "price": 70,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "เบียร์สิงห์(ป๋องสั้น)",
+    "price": 50,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "เบียร์สิงห์(ป๋องยาว)",
+    "price": 65,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "เบียร์สิงห์(ป๋องขวด)",
+    "price": 80,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "เบียร์ไฮเนเก้น",
+    "price": 95,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "สปายเขียว",
+    "price": 40,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "สปายแดง",
+    "price": 40,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "สปายชมพู",
+    "price": 40,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "เซียงซุน",
+    "price": 120,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "เอส เล็ก",
+    "price": 15,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "เอส ใหญ่",
+    "price": 30,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "โซดา",
+    "price": 15,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "น้ำเปล่า เล็ก",
+    "price": 10,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "น้ำเปล่า ใหญ่",
+    "price": 20,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  },
+  {
+    "name": "น้ำแข็ง",
+    "price": 10,
+    "category": "เครื่องดื่ม",
+    "description": "",
+    "emoji": "🍽️",
+    "active": true,
+    "allow_spicy": false,
+    "allow_special": false,
+    "special_price": 0,
+    "allow_toppings": false,
+    "topping_options": [],
+    "option_groups": []
+  }
+]
