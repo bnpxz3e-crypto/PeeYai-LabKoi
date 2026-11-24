@@ -11,3 +11,8 @@
 .modal-backdrop .modal{max-height:92dvh;overflow-y:auto;overscroll-behavior:contain}
 .option-section textarea.input{width:100%;resize:vertical;min-height:88px}
 @media(max-width:600px){.custom-option-line{grid-template-columns:minmax(0,1fr) 92px auto}.custom-group-head .btn{padding:8px}.modal-backdrop .modal{max-width:calc(100vw - 24px)}}
+
+/* V5.2: editable meat choice guidance */
+.max-two-hint,.max-two-note{color:#8f2739;font-size:12px}
+.custom-group-head .max-two-hint{white-space:nowrap}
+.option-section[data-option-kind="meat"]{border-left:3px solid #991b30;padding-left:12px}
