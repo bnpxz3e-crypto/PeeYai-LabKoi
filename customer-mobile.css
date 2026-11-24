@@ -1,0 +1,64 @@
+/* Customer-only mobile layout. Loaded AFTER style.css. */
+@media (max-width: 700px) {
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; overflow-x: clip; }
+  body.customer-page { width: 100%; min-width: 0; margin: 0; overflow-x: clip; font-size: 14px; line-height: 1.5; }
+  .customer-page *, .customer-page *::before, .customer-page *::after { box-sizing: border-box; }
+  .customer-page .customer-shell { width: 100%; max-width: 100%; min-width: 0; padding: 9px 10px calc(90px + env(safe-area-inset-bottom)); margin: 0 auto; }
+  .customer-page .customer-head { width:100%; padding: 11px 12px; margin-bottom: 12px; border-radius: 14px; gap: 8px; flex-wrap: wrap; }
+  .customer-page .brand { min-width: 0; gap: 8px; flex: 1 1 190px; }
+  .customer-page .brand > div:last-child {min-width: 0;}
+  .customer-page .customer-head .logo-square { width: 38px; height: 38px; flex: 0 0 38px; border-radius: 11px; font-size: 14px; }
+  .customer-page .customer-head .brand strong { font-size: 16px; line-height: 1.3; }
+  .customer-page .customer-head .brand small { font-size: 10px; line-height: 1.35; }
+  .customer-page .customer-head .table-tag {font-size: 12px; padding: 6px 10px; border-radius: 9px; max-width: 100%;}
+  .customer-page .hero { width: 100%; min-height: 0; padding: 17px 16px; margin-bottom: 17px; border-radius: 15px; }
+  .customer-page .hero h1 {font-size: clamp(20px, 5.5vw, 25px); line-height: 1.3; margin: 5px 0 7px; letter-spacing: -.4px; }
+  .customer-page .hero p {font-size: 12px; line-height: 1.5; }
+  .customer-page .hero .eyebrow {font-size: 10px;}
+  .customer-page .hero-steps {margin-top: 11px; gap: 5px;}
+  .customer-page .hero-steps span {font-size: 10px; padding: 4px 6px; border-radius: 6px;}
+  .customer-page .hero-art {display:none!important;}
+  .customer-page .customer-grid { display: grid; grid-template-columns: minmax(0,1fr); width: 100%; min-width: 0; gap: 18px; }
+  .customer-page .menu-area { min-width: 0; max-width: 100%; }
+  .customer-page .section-title {margin: 14px 0 9px; gap: 6px;}
+  .customer-page .section-title h2 {font-size: 20px; line-height: 1.35;}
+  .customer-page .section-title p {font-size: 12px; margin-top: 2px;}
+  .customer-page .section-eyebrow {font-size: 10px;}
+  .customer-page .filters {width:100%; display:flex; gap:6px; flex-wrap:nowrap; overflow-x:auto; overflow-y:hidden; overscroll-behavior-x:contain; -webkit-overflow-scrolling:touch; scrollbar-width:none; margin: 9px 0 13px; padding: 0 0 4px;}
+  .customer-page .filters::-webkit-scrollbar{display:none;}
+  .customer-page .filter-btn {min-height:36px; padding:7px 11px; flex:0 0 auto; white-space:nowrap; border-radius:9px; font-size:12px;}
+  .customer-page .food-grid {width:100%; max-width:100%; min-width:0; grid-template-columns:minmax(0,1fr)!important; gap:9px; }
+  .customer-page .food-card, .customer-page .text-only-food {width:100%; min-width:0; max-width:100%; min-height:0; border-radius:13px; overflow:hidden;}
+  .customer-page .text-only-food .food-meta, .customer-page .food-card .food-meta {width:100%; min-width:0; padding:12px 13px;}
+  .customer-page .food-category {font-size:10px; line-height:1.2; padding:3px 6px;}
+  .customer-page .text-only-food .food-meta h3, .customer-page .food-meta h3 {font-size:17px; min-height:0; line-height:1.35; margin:5px 0 8px; overflow-wrap:anywhere;}
+  .customer-page .food-meta p, .customer-page .text-only-food .food-meta p {font-size:12px; min-height:0; height:auto; margin:0 0 8px; line-height:1.45;}
+  .customer-page .food-bottom, .customer-page .text-only-food .food-bottom {width:100%; margin-top:8px; gap:7px; min-width:0;}
+  .customer-page .price, .customer-page .text-only-food .price {font-size:19px; font-weight:600; white-space:nowrap;}
+  .customer-page .add-btn, .customer-page .text-only-food .add-btn {min-width:85px; width:auto; height:38px; padding:0 11px; font-size:13px; font-weight:600; border-radius:9px; flex:0 0 auto;}
+  .customer-page .cart-panel {width:100%; min-width:0; padding:15px 13px; border-radius:14px; position:static;}
+  .customer-page .cart-head h2, .customer-page .cart-panel h2 {font-size:19px;}
+  .customer-page .cart-hint {font-size:12px;}
+  .customer-page .cart-row {gap:9px; padding:11px 0; min-width:0;}
+  .customer-page .cart-row .detail {min-width:0;}
+  .customer-page .cart-row strong {font-size:14px;}
+  .customer-page .cart-row small {font-size:12px;}
+  .customer-page .cart-emoji {width:40px;height:40px;font-size:22px; flex:0 0 40px;}
+  .customer-page .cart-panel .totals strong {font-size:22px;}
+  .customer-page .mobile-cart-jump {left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom)); max-width:calc(100% - 20px); padding:12px 14px; font-size:14px; min-height:52px;}
+  .customer-page .mobile-cart-jump strong{font-size:16px;}
+  .customer-page .btn, .customer-page button {max-width:100%;}
+  .customer-page .modal {max-width:100%; border-radius:15px; padding:16px 13px;}
+  .customer-page .modal h2{font-size:21px;}
+  .customer-page .option-section h3 {font-size:16px;}
+  .customer-page .option-line, .customer-page .spice-choice {font-size:14px; padding:10px;}
+  .customer-page .spice-options {grid-template-columns:repeat(2,minmax(0,1fr));}
+  .customer-page .tracking-area {min-width:0; margin-top:22px;}
+  .customer-page .toast {max-width:calc(100% - 24px); left:12px; right:12px; bottom:75px; font-size:13px;}
+}
+@media (max-width: 350px) {
+  .customer-page .customer-shell {padding-left:8px;padding-right:8px;}
+  .customer-page .hero-steps span{font-size:9px;padding:4px;}
+  .customer-page .customer-head .brand strong{font-size:15px;}
+  .customer-page .text-only-food .food-meta h3,.customer-page .food-meta h3{font-size:16px;}
+}
