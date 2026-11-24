@@ -1,7 +1,81 @@
 let view='overview',orders=[],menus=[],tables=[],sound=false,initialized=false,refreshing=false,lastIds=new Set(),counterFilter='all',orderFilter='all';
 const viewMeta={overview:['ภาพรวมร้าน','ภาพรวมออเดอร์และการดำเนินงาน'],kitchen:['ห้องครัว','ติดตามและจัดการสถานะอาหารแบบเรียลไทม์'],counter:['เคาน์เตอร์','ตรวจสอบบิลและรับชำระเงิน (ด้วยมือ)'],orders:['จัดการออเดอร์','แก้ไขและยกเลิกออเดอร์ได้ทุกสถานะ'],menu:['จัดการเมนู','เพิ่ม แก้ไข ลบ เปิด/ปิดการขาย'],tables:['QR ประจำโต๊ะ','สร้าง QR ให้ลูกค้าสแกนแล้วเปิดหน้าสั่งอาหาร'],customer:['มุมมองลูกค้า','จำลองหน้าเว็บที่ลูกค้าเห็น โดยไม่เปิดเมนูพนักงาน']};
-async function init(){if(!cloud){document.getElementById('demoNote').classList.remove('hidden');document.getElementById('cloudLogin').classList.add('hidden');document.getElementById('demoLogin').classList.remove('hidden')}if(await api.isOwner())enter();document.getElementById('loginBtn').onclick=login}
-async function login(){const b=document.getElementById('loginBtn');b.disabled=true;try{await api.authenticate(document.getElementById('email').value,document.getElementById('password').value);if(!cloud)sessionStorage.setItem('mori-demo-owner','yes');enter()}catch(e){toast(e.message)}finally{b.disabled=false}}
+// PIN entry: a single secure input drives the six slots and opens the phone number keyboard.
+// The PIN is NOT embedded in JavaScript; Supabase Auth verifies it.
+let pinBusy=false, pinFailures=0, pinBlockUntil=0;
+async function init(){
+  const input=document.getElementById('pinInput');
+  input.addEventListener('input',()=>{
+    input.value=input.value.replace(/\D/g,'').slice(0,6);
+    document.getElementById('pinError').textContent='';
+    drawPin();
+    // Wait for the user to press the login button after entering all six digits.
+  });
+  input.addEventListener('keydown',e=>{
+    if(e.key==='Enter'&&input.value.length===6){e.preventDefault();login()}
+  });
+  document.getElementById('pinEntry').addEventListener('click',()=>input.focus());
+  document.getElementById('loginBtn').addEventListener('click',login);
+  // Require PIN after each reload: do not reuse the previously authenticated session.
+  if(cloud){
+    try{await supa.auth.signOut({scope:'local'});}catch(e){console.warn('Local logout:',e)}
+  }else{
+    document.getElementById('pinError').textContent='ไม่สามารถเชื่อมต่อระบบเข้าสู่ระบบได้';
+  }
+  drawPin();
+}
+function drawPin(){
+  const input=document.getElementById('pinInput');
+  const n=input.value.length;
+  document.querySelectorAll('.pin-digit').forEach((box,i)=>{
+    box.textContent=i<n?'●':'_';
+    box.classList.toggle('entered',i<n);
+    box.classList.toggle('current',i===n);
+  });
+}
+async function login(){
+  const input=document.getElementById('pinInput');
+  const pin=input.value;
+  if(pinBusy)return;
+  if(!/^\d{6}$/.test(pin)){document.getElementById('pinError').textContent='กรุณากรอกรหัส PIN ให้ครบ 6 หลัก';input.focus();return;}
+  const errorBox=document.getElementById('pinError');
+  if(Date.now()<pinBlockUntil){
+    errorBox.textContent='ลองรหัสหลายครั้งเกินไป กรุณาลองใหม่ภายหลัง';
+    input.value='';drawPin();return;
+  }
+  if(!cloud){errorBox.textContent='ไม่สามารถเชื่อมต่อระบบเข้าสู่ระบบได้';return}
+  pinBusy=true;
+  input.disabled=true;
+  const loginButton=document.getElementById('loginBtn');
+  loginButton.disabled=true;
+  loginButton.textContent='กำลังตรวจสอบ...';
+  errorBox.textContent='กำลังตรวจสอบรหัส...';
+  drawPin();
+  try{
+    const email=String(window.MORI_OWNER_LOGIN_EMAIL||'').trim();
+    if(!email)throw Error('ยังไม่ได้ตั้งค่าบัญชีเจ้าของร้าน');
+    await api.authenticate(email,pin);
+    if(!await api.isOwner()){
+      await api.logout();
+      throw Error('บัญชีนี้ไม่ได้รับสิทธิ์เจ้าของร้าน');
+    }
+    pinFailures=0;
+    input.value='';
+    await enter();
+  }catch(e){
+    pinFailures++;
+    if(pinFailures>=5){pinBlockUntil=Date.now()+60000;pinFailures=0}
+    errorBox.textContent=(e.message==='บัญชีนี้ไม่ได้รับสิทธิ์เจ้าของร้าน')?'ไม่มีสิทธิ์เจ้าของร้าน':
+      (e.message==='ยังไม่ได้ตั้งค่าบัญชีเจ้าของร้าน')?e.message:'รหัสผิด';
+    input.value='';
+  }finally{
+    pinBusy=false;
+    input.disabled=false;
+    loginButton.disabled=false;
+    loginButton.textContent='เข้าสู่ระบบ →';
+    drawPin();
+  }
+}
 async function enter(){if(!await api.isOwner())return;document.getElementById('login').classList.add('hidden');document.getElementById('ownerApp').classList.remove('hidden');document.getElementById('branch').textContent=cfg.branchName||'ร้านอาหาร พี่ใหญ่ลาบก้อย';await refresh(true);api.subscribe(()=>refresh());setInterval(()=>refresh(),15000)}
 async function logout(){await api.logout();location.reload()}
 function go(v){view=v;render()}
@@ -38,258 +112,214 @@ function getMoriReceiptLogo(){
 function isAndroidReceiptDevice(){return /Android/i.test(navigator.userAgent)}
 
 // Existing print button automatically uses RawBT on Android and browser printing elsewhere.
-function printReceipt(id){
- if(!isAndroidReceiptDevice())return printReceiptBrowser(id);
- printReceiptRawBT(id);
+// VAT SAFETY: The default is a receipt, NOT a tax invoice.
+// Do not enable tax mode until the restaurant has VAT registration,
+// the POS/machine approval issues are resolved, and the database creates
+// immutable, sequential tax invoice numbers at the actual issue time.
+const MORI_TAX_SETTINGS = {
+  vatRegistered: false,
+  posApproved: false,
+  legalName: 'พี่ใหญ่ลาบก้อย',
+  taxId: '', // real 13-digit Thai taxpayer identification number
+  branchName: '', // e.g. สำนักงานใหญ่ or สาขาที่ ... (verified)
+  branchAddress: '',
+  phone: ''
+};
+function moriTaxReady(o) {
+  const t=MORI_TAX_SETTINGS;
+  return !!(t.vatRegistered && t.posApproved && /^\d{13}$/.test(t.taxId)
+    && t.legalName && o.payment_status==='paid' && o.status!=='cancelled'
+    && o.tax_invoice_number && o.tax_invoice_issued_at);
 }
-
-async function printReceiptRawBT(id){
- const order=orders.find(o=>String(o.id)===String(id));
- if(!order){toast('ไม่พบบิล กรุณารีเฟรชข้อมูล');return}
- try{
-  const img=getMoriReceiptLogo();
-  if(!img.complete || !img.naturalWidth){
-   await new Promise((resolve,reject)=>{
-    const t=setTimeout(()=>reject(new Error('โหลดโลโก้ไม่สำเร็จ')),6000);
-    img.onload=()=>{clearTimeout(t);resolve()};
-    img.onerror=()=>{clearTimeout(t);reject(new Error('โหลดโลโก้ไม่สำเร็จ'))};
-   });
-  }
-  const bytes=buildReceiptEscpos(order,img);
-  const b64=bytesToBase64(bytes);
-  if(b64.length>500000)throw new Error('ใบเสร็จยาวเกินสำหรับการส่งจาก Chrome');
-  // Official RawBT URI protocol for ESC/POS binary print jobs.
-  // Requires the RawBT app installed and POS58 configured within RawBT.
-  window.location.href='rawbt:base64,'+b64;
-  toast('ส่งงานพิมพ์ไปยัง RawBT แล้ว (ตรวจสอบที่เครื่องพิมพ์)');
- }catch(err){
-  toast('RawBT: '+err.message+' · ใช้ปุ่มพิมพ์แบบเดิมได้');
- }
+function moriReceiptInfo(o) {
+  const taxable=moriTaxReady(o);
+  const paid=o.payment_status==='paid';
+  const cancelled=o.status==='cancelled';
+  const title=cancelled ? 'สำเนาบิลที่ยกเลิก' : (taxable ? 'ใบกำกับภาษีอย่างย่อ' : paid ? 'ใบเสร็จรับเงิน' : 'ใบแจ้งยอดชำระเงิน');
+  const issuedAt=taxable?o.tax_invoice_issued_at:(o.receipt_issued_at||new Date().toISOString());
+  const date=new Date(issuedAt);
+  const when=Number.isNaN(date.getTime())?'-':date.toLocaleString('th-TH',{
+    day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'
+  });
+  return {taxable,title,when,documentNumber:taxable?o.tax_invoice_number:(o.number||'-'),
+    status:cancelled?'ยกเลิกออเดอร์':paid?'ชำระแล้ว':'ยังไม่ชำระเงิน'};
 }
-
-function bytesToBase64(data){
- let result='';
- for(let p=0;p<data.length;p+=8192){
-  result+=String.fromCharCode.apply(null,data.subarray(p,p+8192));
- }
- return btoa(result);
+function moriMoney(n) {
+  return Number(n||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
-
-function buildReceiptEscpos(order,logo){
- // POS58 commonly has a printable 384-dot raster area on 58-mm paper.
- const W=384,pad=8;
- const c=document.createElement('canvas');
- c.width=W;c.height=6500;
- const ctx=c.getContext('2d',{willReadFrequently:true});
- ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);
- ctx.fillStyle='#111';ctx.textBaseline='top';
- let y=7;
- const fmt=value=>Number(value||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
- const text=(v,x,size=21,weight=400,align='left')=>{
-  ctx.font=weight+' '+size+'px "Noto Sans Thai", Tahoma, sans-serif';
-  ctx.textAlign=align;ctx.fillText(String(v),x,y);
- };
- const line=(space=12)=>{
-  y+=space;ctx.strokeStyle='#777';ctx.lineWidth=1;ctx.setLineDash([5,5]);
-  ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(W-pad,y);ctx.stroke();
-  ctx.setLineDash([]);y+=space;
- };
- const measure=(v,size=21)=>{
-  ctx.font='400 '+size+'px "Noto Sans Thai", Tahoma, sans-serif';
-  return ctx.measureText(String(v)).width;
- };
- const wrap=(v,maxWidth,size=21)=>{
-  const out=[];let row='';
-  // Thai is a non-space language; use Intl.Segmenter when available.
-  let chunks;
-  if(typeof Intl.Segmenter==='function'){
-   chunks=[...new Intl.Segmenter('th',{granularity:'grapheme'}).segment(String(v))].map(x=>x.segment);
-  }else chunks=Array.from(String(v));
-  for(const ch of chunks){
-   if(measure(row+ch,size)>maxWidth && row){out.push(row);row=ch}
-   else row+=ch;
-  }
-  if(row)out.push(row);
-  return out.length?out:[''];
- };
- const row=(a,b,size=21)=>{
-  text(a,pad,size);text(b,W-pad,size,400,'right');y+=size+10;
- };
- // Draw red/gold logo as a circle. Raw thermal raster is monochrome.
- const diameter=132, logoX=(W-diameter)/2;
- ctx.save();ctx.beginPath();ctx.arc(W/2,y+diameter/2,diameter/2,0,Math.PI*2);ctx.clip();
- ctx.drawImage(logo,logoX,y,diameter,diameter);ctx.restore();
- y+=diameter+12;
- text(order.payment_status==='paid'?'ใบเสร็จรับเงินอย่างย่อ':'ใบแจ้งยอดชำระเงิน',W/2,23,400,'center');y+=34;
- line(9);
- const dt=new Date(order.created_at);
- const when=Number.isNaN(dt.getTime())?'-':dt.toLocaleString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
- row('เลขบิล',order.number||'-',22);
- row('โต๊ะ',order.table_code||'-',22);
- row('วันที่',when,19);
- line(8);
- text('รายการ',pad,23);y+=32;
- const nameRight=160;
- text('จำนวน',202,17,400,'center');text('ราคา',278,17,400,'center');text('รวม',W-pad,17,400,'right');y+=28;
- line(3);
- for(const i of order.items||[]){
-  const q=Math.max(0,Number(i.qty)||0), unit=Number(i.price||0),sum=q*unit;
-  // Keep the name on its own full-width line for clarity with long Thai menu names.
-  for(const seg of wrap(i.name||'ไม่ระบุ',W-pad*2,23)){
-   text(seg,pad,23);y+=32;
-  }
-  text(String(q),202,21,400,'center');
-  text(fmt(unit),289,21,400,'right');
-  text(fmt(sum),W-pad,21,400,'right');
-  y+=28;
-  const options=optionsText(i.options);
-  if(options)for(const seg of wrap(options,W-pad*2-6,18)){
-   text(seg,pad+6,18);y+=25;
-  }
-  y+=6;
-  if(y>5800)throw Error('จำนวนรายการมากเกินสำหรับการพิมพ์หนึ่งครั้ง');
+function moriReceiptHtml(o, demo=false) {
+ const i=moriReceiptInfo(o);
+ if(demo===true && o.preview_issued_at){
+   i.when=new Date(o.preview_issued_at).toLocaleString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
  }
- line(8);
- text('ยอดชำระสุทธิ',pad,29,500);text(fmt(order.total),W-pad,29,500,'right');y+=42;
- const status=order.status==='cancelled'?'ยกเลิกออเดอร์':order.payment_status==='paid'?'ชำระแล้ว':'ยังไม่ชำระเงิน';
- text(status,W/2,23,400,'center');y+=31;
- line(8);
- text('*** ขอบคุณที่ใช้บริการ ***',W/2,21,400,'center');y+=34;
- y+=12;
- // Convert grayscale pixels to 1-bit black-and-white ESC/POS GS v 0 raster.
- const H=Math.min(c.height,Math.ceil(y));
- const pixels=ctx.getImageData(0,0,W,H).data;
- const bytes=[0x1b,0x40,0x1b,0x61,0x00]; // initialize and left alignment
- const widthBytes=Math.ceil(W/8);
- for(let rowStart=0;rowStart<H;rowStart+=240){
-  const blockH=Math.min(240,H-rowStart);
-  bytes.push(0x1d,0x76,0x30,0x00,widthBytes&255,widthBytes>>8,blockH&255,blockH>>8);
-  for(let iy=0;iy<blockH;iy++){
-   for(let bx=0;bx<widthBytes;bx++){
-    let bits=0;
-    for(let bit=0;bit<8;bit++){
-     const x=bx*8+bit,idx=((rowStart+iy)*W+x)*4;
-     const gray=0.299*pixels[idx]+0.587*pixels[idx+1]+0.114*pixels[idx+2];
-     if(gray<152 && pixels[idx+3]>50)bits|=128>>bit;
-    }
-    bytes.push(bits);
-   }
-  }
- }
- bytes.push(0x0a,0x0a,0x0a);
- return Uint8Array.from(bytes);
-}
-
-function printReceiptBrowser(id){
- const logoSrc=MORI_RECEIPT_LOGO_DATA;
- const o=orders.find(row=>String(row.id)===String(id));
- if(!o){toast('ไม่พบบิล กรุณารีเฟรชข้อมูล');return}
-
- const win=window.open('','_blank','width=420,height=760');
- if(!win){
-   toast('เบราว์เซอร์บล็อกหน้าต่างพิมพ์ กรุณาอนุญาต Pop-ups สำหรับเว็บไซต์นี้');
-   return;
- }
-
- const fmt=value=>Number(value||0).toLocaleString('th-TH',{
-   minimumFractionDigits:2,
-   maximumFractionDigits:2
- });
-
- const date= new Date(o.created_at);
- const dateLabel=Number.isNaN(date.getTime())
-   ? '-'
-   : date.toLocaleString('th-TH',{
-       day:'2-digit',
-       month:'2-digit',
-       year:'numeric',
-       hour:'2-digit',
-       minute:'2-digit'
-     });
-
- const safeNumber=esc(o.number||'-');
- const safeTable=esc(o.table_code||'-');
-
-
- const rows=(o.items||[]).map(i=>{
-   const qty=Math.max(0,Number(i.qty)||0);
-   const price=Number(i.price||0);
-   const lineTotal=qty*price;
-   const opts=optionsText(i.options);
-
-   return `
-     <div class="item-row">
-       <div class="item-grid">
-         <div class="item-name">${esc(i.name)}</div>
-         <div class="col qty">${qty}</div>
-         <div class="col price">${fmt(price)}</div>
-         <div class="col total">${fmt(lineTotal)}</div>
-       </div>
-       ${opts ? `<div class="item-note">${esc(opts)}</div>` : ''}
-     </div>
-   `;
+ const t=MORI_TAX_SETTINGS;
+ const escVal=x=>esc(String(x??''));
+ const isDemoTax=demo===true;
+ const taxable=i.taxable||isDemoTax;
+ const title=isDemoTax?'ใบกำกับภาษีอย่างย่อ':i.title;
+ const name=isDemoTax?'[ชื่อผู้ประกอบการจด VAT]':t.legalName;
+ const taxId=isDemoTax?'[เลขผู้เสียภาษี 13 หลัก]':t.taxId;
+ const invNo=isDemoTax?'[เลขใบกำกับภาษี]':i.documentNumber;
+ const header=`${taxable?`
+   <div class="tax-details">
+     <div class="tax-legal">${escVal(name)}</div>
+     ${t.branchName&&!isDemoTax?`<div>${escVal(t.branchName)}</div>`:''}
+     ${t.branchAddress&&!isDemoTax?`<div>${escVal(t.branchAddress)}</div>`:''}
+     <div>เลขประจำตัวผู้เสียภาษี</div><div>${escVal(taxId)}</div>
+   </div>`:''}
+   <div class="doc-title">${escVal(title)}</div>
+   ${isDemoTax?'<div class="sample-warning">ตัวอย่างเท่านั้น — ไม่ใช่เอกสารภาษีจริง</div>':''}`;
+ const rows=(o.items||[]).map(item=>{
+   const qty=Math.max(0,Number(item.qty)||0);
+   const price=Number(item.price||0);
+   const opts=optionsText(item.options);
+   return `<div class="item-block">
+     <div class="item-name">${escVal(item.name)}</div>
+     <div class="item-numbers"><span>${qty}</span><span>${moriMoney(price)}</span><span>${moriMoney(qty*price)}</span></div>
+     ${opts?`<div class="item-note">${escVal(opts)}</div>`:''}
+   </div>`;
  }).join('');
+ // Logo and fonts are identical to the print routines; the preview is rendered from this HTML.
+ return `<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escVal(title)} ${escVal(invNo)}</title>
+ <style>
+  *{box-sizing:border-box;-webkit-font-smoothing:antialiased}
+  @page{size:58mm auto;margin:0}
+  html,body{width:58mm;max-width:58mm;margin:0;padding:0;background:#fff;color:#202020;font-family:Tahoma,'Noto Sans Thai',Arial,sans-serif;font-size:12px;line-height:1.26;font-weight:400}
+  .receipt{width:58mm;padding:.5mm .65mm 1.5mm;overflow:hidden}
+  .logo{width:25mm;height:25mm;border-radius:50%;object-fit:cover;display:block;margin:1mm auto 1.2mm}
+  .tax-details{text-align:center;font-size:11px;line-height:1.3;overflow-wrap:anywhere;margin-bottom:1mm}
+  .tax-legal{font-size:12.5px;font-weight:400}
+  .doc-title{text-align:center;font-size:15px;font-weight:500;margin:1mm 0}
+  .sample-warning{font-size:9px;text-align:center;border:1px solid #999;padding:1mm;margin-bottom:1mm}
+  .line{border:0;border-top:1px dashed #777;margin:1.55mm 0}
+  .meta{display:flex;justify-content:space-between;gap:4px;align-items:flex-start;margin:.5mm 0;font-size:11.6px}
+  .meta>span:last-child{text-align:right}
+  .section{font-size:12.4px;font-weight:500;margin:1mm 0}
+  .item-columns{display:grid;grid-template-columns:1fr 13mm 14mm;gap:1mm;border-bottom:1px dotted #aaa;padding-bottom:.6mm;font-size:10.4px}
+  .item-columns span{text-align:right}.item-columns span:first-child{text-align:left}
+  .item-block{padding:1mm 0 1.3mm;break-inside:avoid}
+  .item-name{font-size:12.8px;line-height:1.3;overflow-wrap:anywhere}
+  .item-numbers{display:grid;grid-template-columns:1fr 13mm 14mm;gap:1mm;font-size:12.4px}
+  .item-numbers span{text-align:right}.item-numbers span:first-child{text-align:left}
+  .item-note{font-size:10.5px;line-height:1.25;margin:.4mm 0;color:#333;overflow-wrap:anywhere}
+  .total{display:flex;justify-content:space-between;gap:3px;align-items:baseline}
+  .total span{font-size:16px;font-weight:500;white-space:nowrap}
+  .status{text-align:center;font-size:12px;margin:1.3mm 0}
+  .vat{text-align:center;font-size:11.2px;margin:.65mm 0}
+  .footer{text-align:center;font-size:11.3px;margin:1mm 0 0}
+  @media screen{body{margin:12px auto;box-shadow:0 2px 18px #bbb;min-height:75mm}}
+  @media print{html,body{width:58mm!important;max-width:58mm!important;margin:0!important;padding:0!important}.receipt{width:58mm!important;padding:.5mm .65mm 1.5mm!important}}
+ </style></head><body><div class="receipt">
+ <img class="logo" src="${MORI_RECEIPT_LOGO_DATA}" alt="โลโก้ร้าน">
+ ${header}
+ <hr class="line">
+ <div class="meta"><span>${taxable?'เลขที่ใบกำกับภาษี':'เลขบิล'}</span><span>${escVal(invNo)}</span></div>
+ ${taxable?`<div class="meta"><span>เลขออเดอร์</span><span>${escVal(o.number||'-')}</span></div>`:''}
+ <div class="meta"><span>โต๊ะ</span><span>${escVal(o.table_code||'-')}</span></div>
+ <div class="meta"><span>วันที่ออก</span><span>${escVal(i.when)}</span></div>
+ <hr class="line"><div class="section">รายการอาหารและเครื่องดื่ม</div>
+ <div class="item-columns"><span>จำนวน</span><span>ราคา/หน่วย</span><span>จำนวนเงิน</span></div>
+ ${rows||'<div class="item-block">ไม่มีรายการอาหาร</div>'}
+ <hr class="line"><div class="total"><span>ยอดชำระสุทธิ</span><span>${moriMoney(o.total)} บาท</span></div>
+ ${taxable?'<div class="vat">ราคานี้รวมภาษีมูลค่าเพิ่มแล้ว</div>':''}
+ <div class="status">${i.status}</div><hr class="line">
+ <div class="footer">*** ขอบคุณที่ใช้บริการ ***</div>
+ </div>
+ ${demo?'':`<script>window.addEventListener('load',()=>{setTimeout(()=>{window.focus();window.print()},350)});<\/script>`}
+ </body></html>`;
+}
 
- const payment=o.payment_status==='paid'?'ชำระแล้ว':'ยังไม่ชำระเงิน';
- const cancelled=o.status==='cancelled';
- const status=cancelled?'ยกเลิกออเดอร์':payment;
- const total=fmt(o.total);
- const docTitle=cancelled ? 'สำเนาบิลที่ยกเลิก' : (o.payment_status==='paid' ? 'ใบเสร็จรับเงินอย่างย่อ' : 'ใบแจ้งยอดชำระเงิน');
-
- const html=`<!doctype html>
-<html lang="th"><head><meta charset="utf-8"><title>ใบเสร็จ ${safeNumber}</title>
-<style>
- *{box-sizing:border-box;-webkit-font-smoothing:antialiased}
- @page{size:58mm auto;margin:0}
- html,body{width:58mm;max-width:58mm;margin:0;padding:0;background:#fff;color:#242424;font-family:Tahoma,"Noto Sans Thai",Arial,sans-serif;font-weight:400;font-size:16px;line-height:1.25}
- body{overflow-wrap:break-word}
- .receipt{width:58mm;padding:0.2mm .4mm 1mm}
- .logo-wrap{display:flex;justify-content:center;margin:0 auto 1.3mm}
- .logo{display:block;width:31mm;height:31mm;object-fit:contain}
- .doc-title{text-align:center;font-size:17px;font-weight:400;margin:0 0 1mm;line-height:1.25}
- .line{border:0;border-top:1px dashed #777;margin:1.8mm 0}
- .meta-row{display:flex;justify-content:space-between;align-items:baseline;gap:3px;font-size:16px;margin:0.55mm 0;font-weight:400}
- .meta-row span:last-child{text-align:right}
- .meta-date{font-size:14px}
- .section-name{font-size:17px;font-weight:400;margin:0 0 .9mm}
- /* At 58mm, larger type needs a two-line item to prevent price columns colliding. */
- .item-head{display:grid;grid-template-columns:minmax(0,1fr) 9mm 14mm 14mm;gap:1px;align-items:baseline;font-size:13px;border-bottom:1px dashed #aaa;margin-bottom:1.1mm;padding-bottom:.65mm}
- .item-head div:not(:first-child){text-align:right}
- .item-row{margin:1.5mm 0 2mm;break-inside:avoid;page-break-inside:avoid}
- .item-grid{display:grid;grid-template-columns:minmax(0,1fr) 9mm 14mm 14mm;gap:1px;align-items:baseline}
- .item-name{font-size:17px;line-height:1.25;font-weight:400;overflow-wrap:anywhere}
- .item-grid .col{font-size:16px;line-height:1.3;font-weight:400;text-align:right;white-space:nowrap}
- .item-note{font-size:15px;line-height:1.24;color:#333;margin:.45mm 0 0;white-space:pre-wrap}
- .total-row{display:flex;justify-content:space-between;align-items:baseline;gap:3px;font-weight:400}
- .total-label,.total-value{font-size:20px;font-weight:400;line-height:1.2}
- .status{text-align:center;font-size:17px;font-weight:400;margin:1.4mm 0}
- .footer{text-align:center;font-size:15px;font-weight:400;line-height:1.25;margin:1mm 0 0}
- .footer strong{font-weight:400}
- @media screen{body{margin:12px auto;box-shadow:0 1px 12px #bbb;min-height:70mm}}
- @media print{html,body{width:58mm!important;max-width:58mm!important;margin:0!important;padding:0!important}.receipt{width:58mm!important;padding:.2mm .4mm 1mm!important}}
-</style></head><body>
-<div class="receipt">
- <div class="logo-wrap"><img class="logo" src="${logoSrc}" alt="โลโก้ร้านขาวดำ"></div>
- <div class="doc-title">${docTitle}</div>
- <div class="line"></div>
- <div class="meta-row"><span>เลขที่ ${safeNumber}</span><span>โต๊ะ ${safeTable}</span></div>
- <div class="meta-row meta-date"><span>${esc(dateLabel)}</span><span>แคชเชียร์ 1</span></div>
- <div class="line"></div>
- <div class="section-name">รายการอาหาร</div>
- <div class="item-head"><div>รายการ</div><div>จำนวน</div><div>ราคา</div><div>รวม</div></div>
- ${rows || '<div class="item-name">ไม่มีรายการอาหาร</div>'}
- <div class="line"></div>
- <div class="total-row"><span class="total-label">ยอดชำระสุทธิ</span><span class="total-value">${total}</span></div>
- <div class="status">${status}</div>
- <div class="line"></div>
- <div class="footer"><strong>*** ขอบคุณที่ใช้บริการ ***</strong></div>
-</div>
-<script>window.addEventListener('load',()=>{setTimeout(()=>{window.focus();window.print()},300)});<\/script>
-</body></html>`;
-
- win.document.open();
- win.document.write(html);
- win.document.close();
+function isAndroidReceiptDevice(){return /Android/i.test(navigator.userAgent)}
+function printReceipt(id){
+ if(isAndroidReceiptDevice())return printReceiptRawBT(id);
+ return printReceiptBrowser(id);
+}
+function printReceiptBrowser(id){
+ const o=orders.find(x=>String(x.id)===String(id));
+ if(!o){toast('ไม่พบบิล');return}
+ const w=window.open('','_blank','width=420,height=760');
+ if(!w){toast('กรุณาอนุญาตหน้าต่าง Pop-up สำหรับเว็บไซต์นี้');return}
+ w.document.open();w.document.write(moriReceiptHtml(o));w.document.close();
+}
+function bytesToBase64(data){
+ let s='';for(let i=0;i<data.length;i+=8192)s+=String.fromCharCode.apply(null,data.subarray(i,i+8192));return btoa(s);
+}
+async function printReceiptRawBT(id){
+ const o=orders.find(x=>String(x.id)===String(id));
+ if(!o){toast('ไม่พบบิล');return}
+ try{
+  const logo=new Image();logo.src=MORI_RECEIPT_LOGO_DATA;
+  await logo.decode();
+  const bytes=buildReceiptEscpos(o,logo);
+  const b64=bytesToBase64(bytes);
+  if(b64.length>500000)throw Error('ข้อมูลใบเสร็จยาวเกินไป');
+  window.location.href='rawbt:base64,'+b64;
+  toast('ส่งคำสั่งไป RawBT แล้ว โปรดตรวจสอบการพิมพ์');
+ }catch(e){toast('RawBT: '+e.message+' · ลองพิมพ์แบบเดิม')}
+}
+function buildReceiptEscpos(o,logo){
+ const W=384, PAD=7, canvas=document.createElement('canvas');
+ canvas.width=W;canvas.height=8500;
+ const ctx=canvas.getContext('2d',{willReadFrequently:true});
+ if(!ctx)throw Error('เปิด canvas ไม่สำเร็จ');
+ ctx.fillStyle='#fff';ctx.fillRect(0,0,W,8500);ctx.fillStyle='#222';ctx.textBaseline='top';
+ let y=7;
+ const info=moriReceiptInfo(o),t=MORI_TAX_SETTINGS;
+ const center=(s,size=23)=>{ctx.font='400 '+size+'px Tahoma,"Noto Sans Thai",sans-serif';ctx.textAlign='center';ctx.fillText(String(s),W/2,y);y+=size+9};
+ const left=(s,size=22,x=PAD)=>{ctx.font='400 '+size+'px Tahoma,"Noto Sans Thai",sans-serif';ctx.textAlign='left';ctx.fillText(String(s),x,y);y+=size+8};
+ const right=(s,size=22)=>{ctx.font='400 '+size+'px Tahoma,"Noto Sans Thai",sans-serif';ctx.textAlign='right';ctx.fillText(String(s),W-PAD,y);y+=size+8};
+ const separator=()=>{y+=6;ctx.strokeStyle='#777';ctx.setLineDash([6,5]);ctx.beginPath();ctx.moveTo(PAD,y);ctx.lineTo(W-PAD,y);ctx.stroke();ctx.setLineDash([]);y+=12};
+ const meta=(a,b,size=21)=>{ctx.font='400 '+size+'px Tahoma,"Noto Sans Thai",sans-serif';ctx.textAlign='left';ctx.fillText(a,PAD,y);ctx.textAlign='right';ctx.fillText(String(b),W-PAD,y);y+=size+10};
+ const wrap=(v,size,max)=>{
+  ctx.font='400 '+size+'px Tahoma,"Noto Sans Thai",sans-serif';
+  const chars=typeof Intl.Segmenter==='function'
+    ? [...new Intl.Segmenter('th',{granularity:'grapheme'}).segment(String(v))].map(x=>x.segment):Array.from(String(v));
+  const lines=[];let part='';for(const x of chars){if(part&&ctx.measureText(part+x).width>max){lines.push(part);part=x}else part+=x}if(part)lines.push(part);
+  return lines.length?lines:[''];
+ };
+ // Circle crop: color image will be rasterized to black and white by the thermal printer.
+ const diameter=130;ctx.save();ctx.beginPath();ctx.arc(W/2,y+diameter/2,diameter/2,0,2*Math.PI);ctx.clip();ctx.drawImage(logo,(W-diameter)/2,y,diameter,diameter);ctx.restore();y+=diameter+12;
+ if(info.taxable){
+  for(const v of wrap(t.legalName,21,W-2*PAD))center(v,21);
+  if(t.branchName)for(const v of wrap(t.branchName,18,W-2*PAD))center(v,18);
+  if(t.branchAddress)for(const v of wrap(t.branchAddress,17,W-2*PAD))center(v,17);
+  center('เลขประจำตัวผู้เสียภาษี',18);center(t.taxId,20);
+ }
+ center(info.title,25);separator();
+ meta(info.taxable?'เลขที่ใบกำกับภาษี':'เลขบิล',info.documentNumber,20);
+ if(info.taxable)meta('เลขออเดอร์',o.number||'-',20);
+ meta('โต๊ะ',o.table_code||'-',22);
+ meta('วันที่ออก',info.when,19);
+ separator();left('รายการอาหารและเครื่องดื่ม',22);
+ ctx.font='400 17px Tahoma,"Noto Sans Thai",sans-serif';ctx.textAlign='left';ctx.fillText('จำนวน',PAD,y);ctx.textAlign='right';ctx.fillText('ราคา/หน่วย',W-108,y);ctx.fillText('จำนวนเงิน',W-PAD,y);y+=26;
+ for(const item of o.items||[]){
+  for(const l of wrap(item.name||'ไม่ระบุ',23,W-2*PAD))left(l,23);
+  const q=Math.max(0,Number(item.qty)||0),u=Number(item.price||0);
+  ctx.font='400 22px Tahoma,"Noto Sans Thai",sans-serif';ctx.textAlign='left';ctx.fillText(String(q),PAD,y);
+  ctx.textAlign='right';ctx.fillText(moriMoney(u),W-108,y);ctx.fillText(moriMoney(q*u),W-PAD,y);y+=30;
+  const opts=optionsText(item.options);
+  if(opts)for(const l of wrap(opts,18,W-2*PAD))left(l,18);
+  y+=6;
+  if(y>7500)throw Error('ใบเสร็จยาวเกินไป');
+ }
+ separator();
+ ctx.font='500 26px Tahoma,"Noto Sans Thai",sans-serif';ctx.textAlign='left';ctx.fillText('ยอดชำระสุทธิ',PAD,y);ctx.textAlign='right';ctx.fillText(moriMoney(o.total),W-PAD,y);y+=40;
+ if(info.taxable)center('ราคานี้รวมภาษีมูลค่าเพิ่มแล้ว',19);
+ center(info.status,21);separator();center('*** ขอบคุณที่ใช้บริการ ***',20);y+=15;
+ const H=Math.ceil(y),pixels=ctx.getImageData(0,0,W,H).data,wb=Math.ceil(W/8);
+ const bytes=[0x1b,0x40,0x1b,0x61,0];
+ for(let row=0;row<H;row+=220){
+  const n=Math.min(220,H-row);
+  bytes.push(0x1d,0x76,0x30,0,wb&255,wb>>8,n&255,n>>8);
+  for(let iy=0;iy<n;iy++)for(let bx=0;bx<wb;bx++){
+    let bits=0;for(let bit=0;bit<8;bit++){
+      const px=bx*8+bit,idx=((row+iy)*W+px)*4;
+      const gray=0.299*pixels[idx]+0.587*pixels[idx+1]+0.114*pixels[idx+2];
+      if(gray<145&&pixels[idx+3]>50)bits|=128>>bit;
+    }bytes.push(bits);
+  }
+ }
+ bytes.push(10,10,10);return Uint8Array.from(bytes);
 }
 
 function simpleOrderTable(list,counter=false){return orderCards(list,counter)}
