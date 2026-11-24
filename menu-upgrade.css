@@ -16,3 +16,7 @@
 .max-two-hint,.max-two-note{color:#8f2739;font-size:12px}
 .custom-group-head .max-two-hint{white-space:nowrap}
 .option-section[data-option-kind="meat"]{border-left:3px solid #991b30;padding-left:12px}
+
+.group-max-select{margin:10px 0 14px}.group-max-select label{display:block;font-size:13px;color:#696069;margin-bottom:6px}.group-max-select select{max-width:220px}
+
+.admin-menu-category{margin:24px 0 36px}.admin-menu-category-header{display:flex;justify-content:space-between;align-items:center;background:#fff3ed;border-left:5px solid #9e1930;border-radius:10px;padding:14px 18px;margin-bottom:14px}.admin-menu-category-header h3{font-size:20px;margin:0}.admin-menu-category-header span{font-size:13px;color:#7c6e68}
