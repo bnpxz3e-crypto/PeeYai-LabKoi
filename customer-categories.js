@@ -1,7 +1,7 @@
 /* CUSTOMER ONLY — group menu cards by category without modifying ordering or checkout. */
 (() => {
   'use strict';
-  const preferred = ['เมนูเนื้อ', 'เมนูหมู', 'ส้มตำ', 'จานเดียว/อื่นๆ', 'เครื่องดื่ม'];
+  const preferred = ['เมนูเนื้อ', 'เมนูหมู', 'ส้มตำ', 'จานเดียว', 'เพิ่มเติม', 'เครื่องดื่ม'];
 
   function groupCustomerFoods() {
     const container = document.getElementById('foods');
