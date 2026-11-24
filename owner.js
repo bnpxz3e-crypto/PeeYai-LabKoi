@@ -467,12 +467,70 @@ function editOrder(id){
  draw();el.querySelector('#addLine').onclick=()=>{let id=Number(el.querySelector('#editAdd').value);let l=lines.find(x=>x.id===id&&!optionsText(x.options));if(l)l.qty=Math.min(99,l.qty+1);else lines.push({id,qty:1,options:{}});draw()};
  el.querySelector('#saveOrder').onclick=async()=>{if(!lines.length)return toast('ต้องมีรายการอย่างน้อยหนึ่งรายการ');await perform(()=>api.editOrder(id,lines),'แก้ไขออเดอร์แล้ว');closeModal()};
 }
-function toggleSound(){sound=!sound;document.getElementById('soundBtn').textContent=sound?'🔊 เปิดเสียงแล้ว':'🔕 เปิดเสียง';if(sound){try{audio=new (window.AudioContext||window.webkitAudioContext)();audio.resume();beep();toast('เปิดเสียงแจ้งเตือนแล้ว')}catch(e){toast('เปิดเสียงไม่สำเร็จ')}}else if('speechSynthesis' in window){speechSynthesis.cancel()}}
+function toggleSound(){sound=!sound;document.getElementById('soundBtn').textContent=sound?'🔊 เปิดเสียงแล้ว':'🔕 เปิดเสียง';if(sound){try{audio=new (window.AudioContext||window.webkitAudioContext)();audio.resume();beep();toast('เปิดเสียงแจ้งเตือนแล้ว')}catch(e){toast('เปิดเสียงไม่สำเร็จ')}}else{ kitchenVoiceQueue.length=0; if(kitchenVoicePlayer){kitchenVoicePlayer.pause();kitchenVoicePlayer=null;} kitchenVoiceBusy=false; if('speechSynthesis' in window)speechSynthesis.cancel(); }}
 function beep(){if(!sound||!audio)return;try{let osc=audio.createOscillator(),gain=audio.createGain();osc.type='sine';osc.frequency.value=750;gain.gain.setValueAtTime(.0001,audio.currentTime);gain.gain.exponentialRampToValueAtTime(.19,audio.currentTime+.03);gain.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+.34);osc.connect(gain).connect(audio.destination);osc.start();osc.stop(audio.currentTime+.35)}catch(e){}}
 
-let announcementQueue=[];let speakingOrders=false;
-function announceOrders(newOrders){if(!sound)return;for(const o of newOrders)announcementQueue.push('โต๊ะ '+o.table_code+' สั่งอาหารเข้ามาแล้วจ้าาา');if(!speakingOrders)playNextAnnouncement()}
-function playNextAnnouncement(){if(!sound){announcementQueue=[];speakingOrders=false;return}const words=announcementQueue.shift();if(!words){speakingOrders=false;return}speakingOrders=true;beep();if(!('speechSynthesis' in window)){speakingOrders=false;return}try{const utter=new SpeechSynthesisUtterance(words);utter.lang='th-TH';utter.rate=.92;utter.pitch=1.12;utter.volume=1;utter.onend=playNextAnnouncement;utter.onerror=playNextAnnouncement;window.speechSynthesis.speak(utter)}catch(e){speakingOrders=false}}
+// Table-specific prerecorded MP3 alerts (provided by the restaurant owner).
+// Play only newly detected waiting orders, never the initial page load.
+const kitchenVoiceQueue=[];
+let kitchenVoiceBusy=false;
+let kitchenVoicePlayer=null;
+const kitchenVoiceDir='sounds/';
+function kitchenVoiceTableNumber(tableCode){
+  // 1, 01, A-01, B-11, "โต๊ะ 7" => 1..11. Never derive the table from the order number.
+  const value=String(tableCode??'').trim();
+  const match=value.match(/(?:^|[^0-9])(\d{1,3})$/);
+  if(!match)return null;
+  const num=Number(match[1]);
+  return Number.isInteger(num)&&num>=1&&num<=11?num:null;
+}
+function announceOrders(newOrders){
+  if(!sound)return;
+  for(const order of newOrders){
+    const table=kitchenVoiceTableNumber(order.table_code);
+    kitchenVoiceQueue.push({table,code:String(order.table_code??'')});
+  }
+  playNextAnnouncement();
+}
+function playNextAnnouncement(){
+  if(kitchenVoiceBusy || !sound)return;
+  const item=kitchenVoiceQueue.shift();
+  if(!item)return;
+  kitchenVoiceBusy=true;
+  const done=()=>{
+    kitchenVoiceBusy=false;
+    kitchenVoicePlayer=null;
+    if(sound)playNextAnnouncement();
+  };
+  if(!item.table){
+    // No uploaded recording for the table. Fall back to Thai TTS when supported.
+    if('speechSynthesis' in window){
+      try{
+        const utter=new SpeechSynthesisUtterance('ลูกค้าโต๊ะ '+item.code+' สั่งอาหารเข้าครัวแล้วจ้า');
+        utter.lang='th-TH';utter.rate=.92;utter.onend=done;utter.onerror=done;
+        window.speechSynthesis.speak(utter);
+        return;
+      }catch(e){console.warn('Kitchen voice fallback:',e)}
+    }
+    beep();done();return;
+  }
+  const player=new Audio(kitchenVoiceDir+'table-'+item.table+'.mp3');
+  kitchenVoicePlayer=player;
+  player.preload='auto';
+  player.volume=1;
+  player.onended=done;
+  player.onerror=()=>{
+    console.warn('Kitchen voice MP3 missing for table',item.table);
+    toast('ไม่พบเสียงแจ้งเตือนโต๊ะ '+item.table);
+    done();
+  };
+  player.play().catch(error=>{
+    console.warn('Kitchen voice playback blocked:',error);
+    toast('เบราว์เซอร์บล็อกเสียง กรุณากด เปิดเสียง ที่หน้าเจ้าของร้าน');
+    done();
+  });
+}
+
 init();
 
 // Print queue: owner-only RPC on Supabase; iPad never connects directly to Bluetooth.
