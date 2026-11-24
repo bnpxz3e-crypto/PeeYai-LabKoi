@@ -1,0 +1,13 @@
+/* PeeYai menu update v5 */
+.food-sold-out{opacity:.65;background:#f5f2f0!important;order:5}
+.food-sold-out .add-btn{background:#dcd8d5!important;color:#574c49!important;cursor:not-allowed!important;opacity:1}
+.custom-group-heading,.custom-group-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between}
+.custom-option-group{border:1px solid #e8d9d2;border-radius:14px;padding:15px;margin:12px 0;background:#fffdfb}
+.custom-group-head{justify-content:flex-start;margin-bottom:12px}
+.group-title-display{font-weight:700;color:#991b30;flex:1}
+.group-edit-field{display:flex;gap:8px;margin-bottom:12px}.group-edit-field .input{flex:1}
+.custom-option-line{display:grid;grid-template-columns:minmax(0,2fr) minmax(80px,1fr) auto;gap:9px;margin:8px 0}
+.custom-option-line .input{min-width:0}.custom-options{margin-bottom:10px}
+.modal-backdrop .modal{max-height:92dvh;overflow-y:auto;overscroll-behavior:contain}
+.option-section textarea.input{width:100%;resize:vertical;min-height:88px}
+@media(max-width:600px){.custom-option-line{grid-template-columns:minmax(0,1fr) 92px auto}.custom-group-head .btn{padding:8px}.modal-backdrop .modal{max-width:calc(100vw - 24px)}}
