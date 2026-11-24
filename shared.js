@@ -20,7 +20,22 @@ const statusLabel={waiting:'รอครัว',cooking:'กำลังทำ',
 const statusNext={waiting:'cooking',cooking:'ready',ready:'served'};
 const statusAction={waiting:'เริ่มทำ',cooking:'พร้อมเสิร์ฟ',ready:'เสิร์ฟแล้ว'};
 function toast(message){let e=document.getElementById('toast');if(!e)return;e.textContent=message;e.classList.add('visible');clearTimeout(window.__moriToast);window.__moriToast=setTimeout(()=>e.classList.remove('visible'),2800)}
-function modal(html){const b=document.createElement('div');b.className='modal-backdrop';b.innerHTML='<div class="modal">'+html+'</div>';/* Do not close dialogs when touching outside; use the explicit close button. */document.body.appendChild(b);return b}
+function modal(html){
+  const b=document.createElement('div');
+  b.className='modal-backdrop';
+  b.innerHTML='<div class="modal" role="dialog" aria-modal="true">'+html+'</div>';
+  // Clicks on the backdrop must never dismiss the dialog.
+  // Prevent unrelated page-level click listeners from handling dialog clicks.
+  b.addEventListener('click',event=>{
+    if(event.target===b){event.preventDefault();}
+    event.stopPropagation();
+  });
+  b.addEventListener('pointerdown',event=>event.stopPropagation());
+  b.addEventListener('mousedown',event=>event.stopPropagation());
+  b.addEventListener('touchstart',event=>event.stopPropagation(),{passive:true});
+  document.body.appendChild(b);
+  return b;
+}
 const closeModal=()=>document.querySelector('.modal-backdrop')?.remove();
 function listenDemo(callback){window.addEventListener('storage',e=>{if(e.key===KEY)callback()});window.addEventListener('mori-demo-updated',callback);if(bc)bc.onmessage=callback}
 function normalizedOptions(o){return {spice:o?.spice||'',special:!!o?.special,toppings:Array.isArray(o?.toppings)?o.toppings:[],note:String(o?.note||'').slice(0,300)}}
