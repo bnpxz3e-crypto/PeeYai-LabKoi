@@ -397,7 +397,15 @@ function editMenu(id){
  const m=menus.find(x=>x.id===id)||{name:'',category:'เมนูเนื้อ',emoji:'🍽️',price:'',description:'',active:true,allow_toppings:false,allow_spicy:false,allow_special:false,special_price:0,topping_options:[],option_groups:[]};
  const legacy=(m.topping_options||[]).filter(o=>o.name!=='ไข่ต้ม');
  let groups=Array.isArray(m.option_groups)&&m.option_groups.length?JSON.parse(JSON.stringify(m.option_groups)):
- (m.allow_toppings&&legacy.length?[{id:'legacy',title:'ท็อปปิ้ง (ไม่บังคับ)',enabled:true,items:legacy.map(t=>({name:t.name,price:Number(t.price||0)}))}]:[]);
+ (m.allow_toppings&&legacy.length?[{id:'legacy',kind:'topping',title:'ท็อปปิ้ง (ไม่บังคับ)',enabled:true,items:legacy.map(t=>({name:t.name,price:Number(t.price||0)}))}]:[]);
+ // Default editable sections. Preserve every existing custom section and its items.
+ const meatGroup=g=>g.kind==='meat'||/^ประเภทเนื้อ\s*$/.test(String(g.title||'').trim());
+ const toppingGroup=g=>g.kind==='topping'||/^ท็อปปิ้ง/.test(String(g.title||'').trim());
+ if(!groups.some(meatGroup))groups.unshift({id:'default-meat',kind:'meat',title:'ประเภทเนื้อ',enabled:!id,items:[]});
+ if(!groups.some(toppingGroup))groups.push({id:'default-topping',kind:'topping',title:'ท็อปปิ้ง (ไม่บังคับ)',enabled:!id,items:[]});
+ groups=groups.map(g=>({...g,kind:meatGroup(g)?'meat':toppingGroup(g)?'topping':(g.kind||'custom')}));
+ const groupPriority=g=>g.kind==='meat'?0:g.kind==='topping'?1:2;
+ groups.sort((a,b)=>groupPriority(a)-groupPriority(b));
  let serial=Date.now();
  const key=()=>String(++serial);
  const safe=s=>esc(String(s??''));
@@ -412,12 +420,12 @@ function editMenu(id){
   const root=el.querySelector('#customGroups');
   root.innerHTML=groups.map((g,gi)=>`<section class="custom-option-group" data-g="${gi}">
   <div class="custom-group-head"><label class="check-row"><input type="checkbox" data-act="enable" data-g="${gi}" ${g.enabled!==false?'checked':''}> เปิดหัวข้อนี้</label>
-  <span class="group-title-display">${safe(g.title||'หัวข้อใหม่')}</span><button type="button" class="group-edit btn sm plain" data-act="edit" data-g="${gi}">✎ แก้ไข</button><button type="button" class="btn sm danger" data-act="remove" data-g="${gi}">ลบหัวข้อ</button></div>
+  <span class="group-title-display">${safe(g.title||'หัวข้อใหม่')}</span>${g.kind==='meat'?'<small class="max-two-hint">ลูกค้าเลือกได้สูงสุด 2 อย่าง</small>':''}<button type="button" class="group-edit btn sm plain" data-act="edit" data-g="${gi}">✎ แก้ไข</button><button type="button" class="btn sm danger" data-act="remove" data-g="${gi}">ลบหัวข้อ</button></div>
   <div class="group-edit-field hidden"><input class="input" maxlength="90" value="${safe(g.title||'')}" placeholder="เช่น ท็อปปิ้ง (ไม่บังคับ)"><button type="button" class="btn sm green" data-act="confirm" data-g="${gi}">✓</button><button type="button" class="btn sm plain" data-act="cancel" data-g="${gi}">✕</button></div>
   <div class="custom-options">${(g.items||[]).map((item,ii)=>`<div class="custom-option-line"><input class="input" aria-label="ชื่อตัวเลือก" data-field="name" data-g="${gi}" data-i="${ii}" maxlength="100" value="${safe(item.name)}"><input class="input" aria-label="ราคาเพิ่ม" data-field="price" data-g="${gi}" data-i="${ii}" type="number" min="0" step="0.01" value="${Number(item.price||0)}"><button class="btn sm danger" type="button" data-act="remove-item" data-g="${gi}" data-i="${ii}">✕</button></div>`).join('')}</div>
   <button class="btn sm plain" type="button" data-act="add-item" data-g="${gi}">+ เพิ่มตัวเลือกและราคา</button></section>`).join('')||'<p class="small muted">ยังไม่มีหัวข้อ กด + เพิ่มหัวข้อ เพื่อเริ่มสร้าง</p>';
  }
- el.querySelector('#addGroup').onclick=()=>{groups.push({id:key(),title:'หัวข้อใหม่',enabled:true,items:[]});draw();const ix=groups.length-1;el.querySelector(`[data-act="edit"][data-g="${ix}"]`)?.click()};
+ el.querySelector('#addGroup').onclick=()=>{groups.push({id:key(),kind:'custom',title:'หัวข้อใหม่',enabled:true,items:[]});draw();const ix=groups.length-1;el.querySelector(`[data-act="edit"][data-g="${ix}"]`)?.click()};
  el.querySelector('#customGroups').addEventListener('click',e=>{
   const b=e.target.closest('[data-act]');if(!b)return;
   const gi=Number(b.dataset.g),g=groups[gi];if(!g)return;
@@ -439,7 +447,7 @@ function editMenu(id){
    const seen=new Set(),flatten=[];const cleaned=[];
    for(const g of groups){const title=(g.title||'').trim();if(!title)throw Error('กรุณาตั้งชื่อหัวข้อ');const items=[];
     for(const o of g.items||[]){const name=String(o.name||'').trim(),price=Number(o.price);if(!name||!Number.isFinite(price)||price<0)throw Error('ชื่อและราคาตัวเลือกไม่ถูกต้อง');if(seen.has(name))throw Error('ชื่อตัวเลือกซ้ำ: '+name+' (ต้องไม่ซ้ำกันข้ามหัวข้อ)');seen.add(name);items.push({name,price});if(g.enabled!==false)flatten.push({name,price});}
-    cleaned.push({id:String(g.id||key()),title,enabled:g.enabled!==false,items});
+    cleaned.push({id:String(g.id||key()),kind:g.kind||'custom',title,enabled:g.enabled!==false,items});
    }
    const specialPrice=Number(el.querySelector('#specialPrice').value);
    if(!Number.isFinite(specialPrice)||specialPrice<0)throw Error('ราคาพิเศษต้องไม่ติดลบ');
